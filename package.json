@@ -12,7 +12,7 @@
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:studio": "prisma studio",
-    "db:migrate": "prisma migrate dev",
+    "db:migrate": "prisma migrate dev --config ./prisma/prisma.config.ts",
     "db:seed": "bun prisma/seed.ts",
     "generate:keys": "bun scripts/generate-keys.ts",
     "quickstart": "powershell -ExecutionPolicy Bypass -File ./scripts/quickstart.ps1"
@@ -21,6 +21,7 @@
     "@prisma/adapter-pg": "^7.0.0",
     "@prisma/client": "^7.0.0",
     "bcryptjs": "^2.4.3",
+    "dotenv": "^17.2.3",
     "ioredis": "^5.4.1",
     "iron-session": "^8.0.3",
     "jose": "^5.9.6",
