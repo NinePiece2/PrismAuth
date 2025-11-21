@@ -1,9 +1,4 @@
-import {
-  SignJWT,
-  jwtVerify,
-  importPKCS8,
-  importSPKI,
-} from "jose";
+import { SignJWT, jwtVerify, importPKCS8, importSPKI } from "jose";
 import { config } from "./config";
 
 let privateKey: CryptoKey | null = null;
