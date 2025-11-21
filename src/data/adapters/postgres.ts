@@ -42,7 +42,7 @@ class PostgresTenantRepository implements ITenantRepository {
     return (await prisma.tenant.create({
       data: {
         ...rest,
-        settings: settings ?? undefined,
+        settings: settings as any,
       },
     })) as Tenant;
   }
@@ -53,7 +53,7 @@ class PostgresTenantRepository implements ITenantRepository {
       where: { id },
       data: {
         ...rest,
-        settings: settings === null ? undefined : settings,
+        settings: settings as any,
       },
     })) as Tenant;
   }

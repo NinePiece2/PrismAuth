@@ -15,35 +15,94 @@ model Tenant {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  users        User[]
-  oauthClients OAuthClient[]
-  sessions     Session[]
+  users               User[]
+  oauthClients        OAuthClient[]
+  sessions            Session[]
+  customRoles         CustomRole[]
+  passwordResetTokens PasswordResetToken[]
 
   @@index([domain])
 }
 
 model User {
-  id            String    @id @default(cuid())
-  email         String
-  emailVerified DateTime?
-  password      String
-  name          String?
-  image         String?
-  role          String    @default("user")
-  isActive      Boolean   @default(true)
-  tenantId      String
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id                    String    @id @default(cuid())
+  email                 String
+  emailVerified         DateTime?
+  password              String
+  name                  String?
+  image                 String?
+  role                  String    @default("user")
+  customRoleId          String?
+  isActive              Boolean   @default(true)
+  requirePasswordChange Boolean   @default(false)
+  mfaEnabled            Boolean   @default(false)
+  mfaSecret             String?
+  mfaBackupCodes        String[]  @default([])
+  tenantId              String
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
 
-  tenant             Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  sessions           Session[]
-  authorizationCodes AuthorizationCode[]
-  accessTokens       AccessToken[]
-  refreshTokens      RefreshToken[]
+  tenant              Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  customRole          CustomRole?          @relation(fields: [customRoleId], references: [id], onDelete: SetNull)
+  sessions            Session[]
+  authorizationCodes  AuthorizationCode[]
+  accessTokens        AccessToken[]
+  refreshTokens       RefreshToken[]
+  passwordResetTokens PasswordResetToken[]
 
   @@unique([email, tenantId])
   @@index([tenantId])
   @@index([email])
+  @@index([customRoleId])
+}
+
+model CustomRole {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  isActive    Boolean  @default(true)
+  tenantId    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tenant      Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  users       User[]
+  permissions RolePermission[]
+
+  @@unique([name, tenantId])
+  @@index([tenantId])
+}
+
+model RolePermission {
+  id              String   @id @default(cuid())
+  roleId          String
+  applicationId   String
+  permissions     String[] // Array of permission strings like ["read", "write", "delete", "admin"]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  role        CustomRole  @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  application OAuthClient @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@unique([roleId, applicationId])
+  @@index([roleId])
+  @@index([applicationId])
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  tenantId  String
+  expires   DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
 }
 
 model Session {
@@ -81,6 +140,7 @@ model OAuthClient {
   authorizationCodes AuthorizationCode[]
   accessTokens       AccessToken[]
   refreshTokens      RefreshToken[]
+  rolePermissions    RolePermission[]
 
   @@index([tenantId])
   @@index([clientId])

@@ -1,36 +1,136 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# PrismAuth
 
-## Getting Started
+A modern, multi-tenant OAuth2 authentication server built with Next.js, featuring enterprise-grade security with two-factor authentication (2FA/MFA) support.
 
-First, run the development server:
+## Features
+
+- 🏢 **Multi-tenant Architecture**: Isolated authentication per organization/domain
+- 🔐 **OAuth2 Server**: Full OAuth2 authorization server implementation
+- 👥 **User Management**: Admin interface for managing users and roles
+- 🎭 **Custom Roles & Permissions**: Fine-grained access control with per-application permissions
+- 🛡️ **Two-Factor Authentication**: TOTP-based 2FA with backup codes
+- 🔑 **Forced Password Changes**: Admins can require password changes on first login
+- 🎨 **Dark/Light Mode**: System-aware theme with pure black dark mode
+- 🚀 **Modern Stack**: Next.js 16, React 19, TypeScript, Prisma, PostgreSQL
+- 💅 **Beautiful UI**: Built with Shadcn UI and Tailwind CSS
+
+## Quick Start
+
+### Prerequisites
+
+- Node.js 18+ or Bun
+- PostgreSQL database
+- (Optional) Redis for session storage
+
+### Installation
+
+1. Clone the repository
+2. Install dependencies:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+bun install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+3. Set up your environment variables (see SETUP.md)
+4. Run database migrations:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+bun run db:migrate
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+5. Create your first admin user:
 
-## Learn More
+```bash
+bun run scripts/create-admin.ts
+```
 
-To learn more about Next.js, take a look at the following resources:
+6. Start the development server:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+bun run dev
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Open [http://localhost:3000](http://localhost:3000) with your browser.
 
-## Deploy on Vercel
+## Security Features
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Two-Factor Authentication (MFA)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- TOTP-based authentication using standard authenticator apps
+- QR code setup for easy configuration
+- 10 one-time backup codes for account recovery
+- Support for Google Authenticator, Authy, Microsoft Authenticator, and more
+
+### Password Management
+
+- Admins can force password changes for new users
+- Minimum password length requirements
+- Secure password hashing with bcryptjs
+
+### Session Management
+
+- Secure cookie-based sessions using iron-session
+- Multi-step authentication flow (password → password change → MFA)
+- No session creation until all authentication steps complete
+
+## Documentation
+
+- [GETTING_STARTED.md](./GETTING_STARTED.md) - First-time setup guide
+- [SETUP.md](./SETUP.md) - Detailed setup instructions
+- [ARCHITECTURE.md](./ARCHITECTURE.md) - System architecture overview
+- [UI_GUIDE.md](./docs/UI_GUIDE.md) - UI components and styling guide
+- [CUSTOM_ROLES_PERMISSIONS.md](./docs/CUSTOM_ROLES_PERMISSIONS.md) - Custom roles and permissions system
+- [MFA_AND_PASSWORD_CHANGE.md](./docs/MFA_AND_PASSWORD_CHANGE.md) - MFA and password change documentation
+- [CLIENT_INTEGRATION.md](./docs/CLIENT_INTEGRATION.md) - OAuth2 client integration guide
+- [DATABASE_ADAPTERS.md](./docs/DATABASE_ADAPTERS.md) - Database adapter information
+
+## Tech Stack
+
+- **Framework**: Next.js 16 with App Router
+- **UI**: Shadcn UI + Tailwind CSS 4
+- **Database**: PostgreSQL with Prisma ORM
+- **Authentication**: iron-session + bcryptjs
+- **MFA**: otpauth + qrcode
+- **TypeScript**: Fully typed codebase
+
+## User Roles
+
+### Admin (System Role)
+- Create and manage users
+- Configure OAuth2 applications
+- Create and manage custom roles
+- Assign application permissions to roles
+- Force password changes
+- View all tenant data
+
+### User (System Role)
+- Access protected resources
+- Enable/disable 2FA
+- Manage personal settings
+- OAuth2 authentication
+
+### Custom Roles
+- Admin-defined roles with specific permissions
+- Per-application permission sets
+- Flexible permission model (read, write, delete, admin, custom)
+- Users can have both a system role and a custom role
+
+## OAuth2 Support
+
+PrismAuth implements OAuth2 with support for:
+
+- Authorization Code flow
+- Client credentials
+- Token generation and validation
+- User consent management
+- Redirect URI validation
+
+See [CLIENT_INTEGRATION.md](./docs/CLIENT_INTEGRATION.md) for details on integrating OAuth2 clients.
+
+## Contributing
+
+This is a private project. Please see the maintainer for contribution guidelines.
+
+## License
+
+Proprietary - All rights reserved.

@@ -69,6 +69,24 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Check if user needs to change password
+    if (user.requirePasswordChange) {
+      return NextResponse.json({
+        requirePasswordChange: true,
+        userId: user.id,
+        email: user.email,
+      });
+    }
+
+    // Check if user has MFA enabled
+    if (user.mfaEnabled) {
+      return NextResponse.json({
+        requireMfa: true,
+        userId: user.id,
+        email: user.email,
+      });
+    }
+
     // Create session
     await createSession({
       id: user.id,
@@ -79,6 +97,7 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json({
+      success: true,
       id: user.id,
       email: user.email,
       name: user.name,
