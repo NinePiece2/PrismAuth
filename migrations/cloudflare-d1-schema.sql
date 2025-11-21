@@ -14,6 +14,53 @@ CREATE TABLE IF NOT EXISTS tenants (
 
 CREATE INDEX IF NOT EXISTS idx_tenants_domain ON tenants(domain);
 
+-- Custom Roles table
+CREATE TABLE IF NOT EXISTS custom_roles (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  description TEXT,
+  isActive INTEGER NOT NULL DEFAULT 1,
+  tenantId TEXT NOT NULL,
+  createdAt TEXT NOT NULL,
+  updatedAt TEXT NOT NULL,
+  FOREIGN KEY (tenantId) REFERENCES tenants(id) ON DELETE CASCADE
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_custom_roles_name_tenant ON custom_roles(name, tenantId);
+CREATE INDEX IF NOT EXISTS idx_custom_roles_tenant ON custom_roles(tenantId);
+
+-- Role Permissions table
+CREATE TABLE IF NOT EXISTS role_permissions (
+  id TEXT PRIMARY KEY,
+  roleId TEXT NOT NULL,
+  applicationId TEXT NOT NULL,
+  permissions TEXT NOT NULL,
+  createdAt TEXT NOT NULL,
+  updatedAt TEXT NOT NULL,
+  FOREIGN KEY (roleId) REFERENCES custom_roles(id) ON DELETE CASCADE,
+  FOREIGN KEY (applicationId) REFERENCES oauth_clients(id) ON DELETE CASCADE
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_role_permissions_role_app ON role_permissions(roleId, applicationId);
+CREATE INDEX IF NOT EXISTS idx_role_permissions_role ON role_permissions(roleId);
+CREATE INDEX IF NOT EXISTS idx_role_permissions_app ON role_permissions(applicationId);
+
+-- Password Reset Tokens table
+CREATE TABLE IF NOT EXISTS password_reset_tokens (
+  id TEXT PRIMARY KEY,
+  token TEXT NOT NULL UNIQUE,
+  userId TEXT NOT NULL,
+  tenantId TEXT NOT NULL,
+  expires TEXT NOT NULL,
+  used INTEGER NOT NULL DEFAULT 0,
+  createdAt TEXT NOT NULL,
+  FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (tenantId) REFERENCES tenants(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_user ON password_reset_tokens(userId);
+CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_token ON password_reset_tokens(token);
+
 -- Users table
 CREATE TABLE IF NOT EXISTS users (
   id TEXT PRIMARY KEY,
@@ -23,16 +70,24 @@ CREATE TABLE IF NOT EXISTS users (
   name TEXT,
   image TEXT,
   role TEXT NOT NULL DEFAULT 'user',
+  customRoleId TEXT,
   isActive INTEGER NOT NULL DEFAULT 1,
+  requirePasswordChange INTEGER NOT NULL DEFAULT 0,
+  requireMfaSetup INTEGER NOT NULL DEFAULT 0,
+  mfaEnabled INTEGER NOT NULL DEFAULT 0,
+  mfaSecret TEXT,
+  mfaBackupCodes TEXT NOT NULL DEFAULT '[]',
   tenantId TEXT NOT NULL,
   createdAt TEXT NOT NULL,
   updatedAt TEXT NOT NULL,
-  FOREIGN KEY (tenantId) REFERENCES tenants(id) ON DELETE CASCADE
+  FOREIGN KEY (tenantId) REFERENCES tenants(id) ON DELETE CASCADE,
+  FOREIGN KEY (customRoleId) REFERENCES custom_roles(id) ON DELETE SET NULL
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS idx_users_email_tenant ON users(email, tenantId);
 CREATE INDEX IF NOT EXISTS idx_users_tenant ON users(tenantId);
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+CREATE INDEX IF NOT EXISTS idx_users_custom_role ON users(customRoleId);
 
 -- OAuth Clients table
 CREATE TABLE IF NOT EXISTS oauth_clients (
@@ -78,7 +133,7 @@ CREATE TABLE IF NOT EXISTS authorization_codes (
   clientId TEXT NOT NULL,
   userId TEXT NOT NULL,
   redirectUri TEXT NOT NULL,
-  scope TEXT NOT NULL,
+  scope TEXT NOT NULL, -- JSON array stored as TEXT
   expiresAt TEXT NOT NULL,
   codeChallenge TEXT,
   codeChallengeMethod TEXT,
@@ -99,7 +154,7 @@ CREATE TABLE IF NOT EXISTS access_tokens (
   token TEXT NOT NULL UNIQUE,
   clientId TEXT NOT NULL,
   userId TEXT NOT NULL,
-  scope TEXT NOT NULL,
+  scope TEXT NOT NULL, -- JSON array stored as TEXT
   expiresAt TEXT NOT NULL,
   revoked INTEGER NOT NULL DEFAULT 0,
   createdAt TEXT NOT NULL,
@@ -118,7 +173,7 @@ CREATE TABLE IF NOT EXISTS refresh_tokens (
   token TEXT NOT NULL UNIQUE,
   clientId TEXT NOT NULL,
   userId TEXT NOT NULL,
-  scope TEXT NOT NULL,
+  scope TEXT NOT NULL, -- JSON array stored as TEXT
   expiresAt TEXT NOT NULL,
   revoked INTEGER NOT NULL DEFAULT 0,
   createdAt TEXT NOT NULL,

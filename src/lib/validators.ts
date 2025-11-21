@@ -1,9 +1,18 @@
 import { z } from "zod";
 
+// Password validation regex
+const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/;
+
 // User schemas
 export const registerSchema = z.object({
   email: z.string().email("Invalid email address"),
-  password: z.string().min(8, "Password must be at least 8 characters"),
+  password: z
+    .string()
+    .min(8, "Password must be at least 8 characters")
+    .regex(
+      passwordRegex,
+      "Password must contain at least one uppercase letter, one lowercase letter, one number, and one symbol (@$!%*?&)"
+    ),
   name: z.string().min(2, "Name must be at least 2 characters").optional(),
   tenantDomain: z.string().min(1, "Tenant domain is required"),
 });

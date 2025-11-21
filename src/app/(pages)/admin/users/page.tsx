@@ -40,6 +40,7 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { motion } from "framer-motion";
 
 interface CustomRole {
   id: string;
@@ -64,6 +65,8 @@ export default function AdminUsersPage() {
   const [customRoles, setCustomRoles] = useState<CustomRole[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<User | null>(null);
   const [currentUser, setCurrentUser] = useState<{ id: string; email: string; role: string; name: string | null } | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [formData, setFormData] = useState({
@@ -73,6 +76,7 @@ export default function AdminUsersPage() {
     role: "user",
     customRoleId: "",
     requirePasswordChange: false,
+    requireMfaSetup: false,
   });
 
   useEffect(() => {
@@ -207,13 +211,16 @@ export default function AdminUsersPage() {
     }
   };
 
-  const handleDeleteUser = async (userId: string) => {
-    if (!confirm("Are you sure you want to delete this user?")) {
-      return;
-    }
+  const openDeleteDialog = (user: User) => {
+    setUserToDelete(user);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleDeleteUser = async () => {
+    if (!userToDelete) return;
 
     try {
-      const response = await fetch(`/api/admin/users/${userId}`, {
+      const response = await fetch(`/api/admin/users/${userToDelete.id}`, {
         method: "DELETE",
       });
 
@@ -225,6 +232,8 @@ export default function AdminUsersPage() {
       }
 
       toast.success("User deleted successfully");
+      setIsDeleteDialogOpen(false);
+      setUserToDelete(null);
       fetchUsers();
     } catch (error) {
       toast.error("An error occurred while deleting user");
@@ -365,16 +374,42 @@ export default function AdminUsersPage() {
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="password">Password</Label>
-                      <Input
-                        id="password"
-                        type="password"
-                        placeholder="••••••••"
-                        value={formData.password}
-                        onChange={(e) =>
-                          setFormData({ ...formData, password: e.target.value })
-                        }
-                        required
-                      />
+                      <div className="flex gap-2">
+                        <Input
+                          id="password"
+                          type="password"
+                          placeholder="••••••••"
+                          value={formData.password}
+                          onChange={(e) =>
+                            setFormData({ ...formData, password: e.target.value })
+                          }
+                          required
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => {
+                            const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@$!%*?&";
+                            const length = 16;
+                            let password = "";
+                            // Ensure at least one of each required character type
+                            password += "ABCDEFGHIJKLMNOPQRSTUVWXYZ"[Math.floor(Math.random() * 26)];
+                            password += "abcdefghijklmnopqrstuvwxyz"[Math.floor(Math.random() * 26)];
+                            password += "0123456789"[Math.floor(Math.random() * 10)];
+                            password += "@$!%*?&"[Math.floor(Math.random() * 7)];
+                            // Fill the rest randomly
+                            for (let i = password.length; i < length; i++) {
+                              password += chars[Math.floor(Math.random() * chars.length)];
+                            }
+                            // Shuffle the password
+                            password = password.split("").sort(() => Math.random() - 0.5).join("");
+                            setFormData({ ...formData, password });
+                            toast.success("Password generated");
+                          }}
+                        >
+                          Generate
+                        </Button>
+                      </div>
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="role">System Role</Label>
@@ -429,6 +464,21 @@ export default function AdminUsersPage() {
                         Require password change on first login
                       </Label>
                     </div>
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="requireMfaSetup"
+                        checked={formData.requireMfaSetup}
+                        onCheckedChange={(checked) =>
+                          setFormData({ ...formData, requireMfaSetup: checked === true })
+                        }
+                      />
+                      <Label
+                        htmlFor="requireMfaSetup"
+                        className="text-sm font-normal cursor-pointer"
+                      >
+                        Require two-factor authentication setup
+                      </Label>
+                    </div>
                     <DialogFooter>
                       <Button
                         type="button"
@@ -440,6 +490,67 @@ export default function AdminUsersPage() {
                       <Button type="submit">Create User</Button>
                     </DialogFooter>
                   </form>
+                </DialogContent>
+              </Dialog>
+
+              {/* Delete Confirmation Dialog */}
+              <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle className="flex items-center gap-2 text-destructive">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                      </svg>
+                      Delete User
+                    </DialogTitle>
+                    <DialogDescription asChild>
+                      <div className="pt-4 space-y-3">
+                        <div className="text-base">
+                          Are you sure you want to delete this user? This action cannot be undone.
+                        </div>
+                        {userToDelete && (
+                          <div className="bg-muted p-4 rounded-lg space-y-2">
+                            <div className="flex justify-between">
+                              <span className="text-sm font-medium text-muted-foreground">Name:</span>
+                              <span className="text-sm font-semibold">{userToDelete.name || "—"}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-sm font-medium text-muted-foreground">Email:</span>
+                              <span className="text-sm font-semibold">{userToDelete.email}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-sm font-medium text-muted-foreground">Role:</span>
+                              <Badge variant={userToDelete.role === "admin" ? "default" : "secondary"}>
+                                {userToDelete.role}
+                              </Badge>
+                            </div>
+                          </div>
+                        )}
+                        <div className="text-sm text-destructive font-medium">
+                          ⚠️ All user data, sessions, and permissions will be permanently deleted.
+                        </div>
+                      </div>
+                    </DialogDescription>
+                  </DialogHeader>
+                  <DialogFooter className="gap-2 sm:gap-0">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        setIsDeleteDialogOpen(false);
+                        setUserToDelete(null);
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      onClick={handleDeleteUser}
+                    >
+                      Delete User
+                    </Button>
+                  </DialogFooter>
                 </DialogContent>
               </Dialog>
             </div>
@@ -530,7 +641,7 @@ export default function AdminUsersPage() {
                       <Button
                         variant="destructive"
                         size="sm"
-                        onClick={() => handleDeleteUser(user.id)}
+                        onClick={() => openDeleteDialog(user)}
                         disabled={user.id === currentUser?.id}
                       >
                         Delete

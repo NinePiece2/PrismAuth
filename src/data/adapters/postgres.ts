@@ -5,6 +5,7 @@
  */
 
 import { prisma } from "@/lib/db";
+import { Prisma } from "@prisma/client";
 import type {
   IDataAccess,
   ITenantRepository,
@@ -42,7 +43,7 @@ class PostgresTenantRepository implements ITenantRepository {
     return (await prisma.tenant.create({
       data: {
         ...rest,
-        settings: settings as any,
+        settings: settings as Prisma.InputJsonValue | undefined,
       },
     })) as Tenant;
   }
@@ -53,7 +54,7 @@ class PostgresTenantRepository implements ITenantRepository {
       where: { id },
       data: {
         ...rest,
-        settings: settings as any,
+        settings: settings as Prisma.InputJsonValue | undefined,
       },
     })) as Tenant;
   }

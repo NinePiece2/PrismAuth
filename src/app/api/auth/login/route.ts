@@ -20,6 +20,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (!tenant) {
+      console.error(`Tenant not found for domain: ${validatedData.tenantDomain}`);
       return NextResponse.json(
         { error: "Invalid credentials" },
         { status: 401 },
@@ -44,6 +45,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (!user) {
+      console.error(`User not found for email: ${validatedData.email}, tenantId: ${tenant.id}`);
       return NextResponse.json(
         { error: "Invalid credentials" },
         { status: 401 },
@@ -63,6 +65,7 @@ export async function POST(request: NextRequest) {
       user.password,
     );
     if (!isValidPassword) {
+      console.error(`Invalid password for user: ${validatedData.email}`);
       return NextResponse.json(
         { error: "Invalid credentials" },
         { status: 401 },
@@ -73,6 +76,15 @@ export async function POST(request: NextRequest) {
     if (user.requirePasswordChange) {
       return NextResponse.json({
         requirePasswordChange: true,
+        userId: user.id,
+        email: user.email,
+      });
+    }
+
+    // Check if user needs to set up MFA
+    if (user.requireMfaSetup && !user.mfaEnabled) {
+      return NextResponse.json({
+        requireMfaSetup: true,
         userId: user.id,
         email: user.email,
       });

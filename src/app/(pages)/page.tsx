@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { motion } from "framer-motion";
 
 interface User {
   id: string;
@@ -49,19 +50,40 @@ export default function Home() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p>Loading...</p>
-      </div>
+      <motion.div 
+        className="min-h-screen flex items-center justify-center"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.3 }}
+      >
+        <motion.p
+          animate={{ opacity: [0.5, 1, 0.5] }}
+          transition={{ duration: 1.5, repeat: Infinity }}
+        >
+          Loading...
+        </motion.p>
+      </motion.div>
     );
   }
 
   if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-4">
-        <div className="absolute top-4 right-4">
+        <motion.div 
+          className="absolute top-4 right-4"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
           <ThemeToggle />
-        </div>
-        <Card className="w-full max-w-md">
+        </motion.div>
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5 }}
+          className="w-full max-w-md"
+        >
+          <Card>
           <CardHeader>
             <CardTitle>Welcome to PrismAuth</CardTitle>
             <CardDescription>
@@ -87,20 +109,36 @@ export default function Home() {
               */}
             </div>
           </CardContent>
-        </Card>
+          </Card>
+        </motion.div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <motion.div 
+      className="min-h-screen bg-background"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3 }}
+    >
       <nav className="bg-card border-b border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
-            <div className="flex items-center">
+            <motion.div 
+              className="flex items-center"
+              initial={{ x: -20, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+            >
               <h1 className="text-xl font-bold">PrismAuth</h1>
-            </div>
-            <div className="flex items-center space-x-4">
+            </motion.div>
+            <motion.div 
+              className="flex items-center space-x-4"
+              initial={{ x: 20, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+            >
               <span className="text-sm text-gray-600 dark:text-gray-400">
                 {user.name || user.email}
               </span>
@@ -122,12 +160,16 @@ export default function Home() {
               <Button variant="outline" onClick={handleLogout}>
                 Logout
               </Button>
-            </div>
+            </motion.div>
           </div>
         </div>
       </nav>
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <motion.div 
+        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+      >
         <Card>
           <CardHeader>
             <CardTitle>Dashboard</CardTitle>
@@ -162,7 +204,7 @@ export default function Home() {
             )}
           </CardContent>
         </Card>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }

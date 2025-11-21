@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import * as OTPAuth from "otpauth";
 import QRCode from "qrcode";
 import { randomBytes } from "crypto";
+import { emailService, emailTemplates } from "@/lib/email";
 
 /**
  * Setup MFA for user
@@ -125,13 +126,41 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    // Enable MFA
-    await prisma.user.update({
+    // Enable MFA and clear requireMfaSetup flag
+    const updatedUser = await prisma.user.update({
       where: { id: user.userId },
-      data: { mfaEnabled: true },
+      data: { 
+        mfaEnabled: true,
+        requireMfaSetup: false,
+      },
     });
 
-    return NextResponse.json({ success: true });
+    // Send MFA enabled confirmation email
+    try {
+      const { config } = await import("@/lib/config");
+      const emailTemplate = emailTemplates.mfaEnabled(updatedUser.name || undefined);
+      
+      await emailService.send({
+        to: updatedUser.email,
+        from: config.email.from,
+        subject: emailTemplate.subject,
+        html: emailTemplate.html,
+        text: emailTemplate.text,
+      });
+    } catch (emailError) {
+      console.error("Failed to send MFA enabled email:", emailError);
+      // Don't fail MFA enablement if email fails
+    }
+
+    return NextResponse.json({ 
+      success: true,
+      user: {
+        id: updatedUser.id,
+        email: updatedUser.email,
+        name: updatedUser.name,
+        role: updatedUser.role,
+      },
+    });
   } catch (error) {
     console.error("MFA verification error:", error);
     return NextResponse.json(

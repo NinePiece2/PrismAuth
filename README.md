@@ -35,6 +35,10 @@ bun install
 4. Run database migrations:
 
 ```bash
+bun run db:generate
+```
+
+```bash
 bun run db:migrate
 ```
 

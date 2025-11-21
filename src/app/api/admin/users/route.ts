@@ -3,6 +3,8 @@ import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
 import { hashPassword } from "@/lib/crypto";
 import { ZodError, z } from "zod";
+import { emailService, emailTemplates } from "@/lib/email";
+import { config } from "@/lib/config";
 
 const createUserSchema = z.object({
   email: z.string().email(),
@@ -11,6 +13,7 @@ const createUserSchema = z.object({
   role: z.enum(["user", "admin"]),
   customRoleId: z.string().optional(),
   requirePasswordChange: z.boolean().optional(),
+  requireMfaSetup: z.boolean().optional(),
 });
 
 /**
@@ -119,20 +122,50 @@ export async function POST(request: NextRequest) {
         name: validatedData.name || null,
         tenantId: currentUser.tenantId,
         role: validatedData.role,
-        customRoleId: validatedData.customRoleId,
+        ...(validatedData.customRoleId && { customRoleId: validatedData.customRoleId }),
         isActive: true,
         requirePasswordChange: validatedData.requirePasswordChange ?? false,
+        requireMfaSetup: validatedData.requireMfaSetup ?? false,
       },
       select: {
         id: true,
         email: true,
         name: true,
         role: true,
+        customRoleId: true,
+        customRole: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
         isActive: true,
         createdAt: true,
         updatedAt: true,
       },
     });
+
+    // Send welcome email with login credentials
+    try {
+      const loginUrl = `${config.baseUrl}/login`;
+      const emailTemplate = emailTemplates.accountCreated(
+        validatedData.email,
+        validatedData.password, // Send the plain password via email
+        loginUrl,
+        validatedData.name
+      );
+      
+      await emailService.send({
+        to: validatedData.email,
+        from: config.email.from,
+        subject: emailTemplate.subject,
+        html: emailTemplate.html,
+        text: emailTemplate.text,
+      });
+    } catch (emailError) {
+      console.error("Failed to send welcome email:", emailError);
+      // Don't fail user creation if email fails
+    }
 
     return NextResponse.json(user);
   } catch (error) {

@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { motion } from "framer-motion";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -62,14 +63,25 @@ export default function RegisterPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <div className="absolute top-4 right-4">
+      <motion.div 
+        className="absolute top-4 right-4"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
         <ThemeToggle />
-      </div>
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle>Create an Account</CardTitle>
-          <CardDescription>Register to get started with PrismAuth</CardDescription>
-        </CardHeader>
+      </motion.div>
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5 }}
+        className="w-full max-w-md"
+      >
+        <Card>
+          <CardHeader>
+            <CardTitle>Create an Account</CardTitle>
+            <CardDescription>Register to get started with PrismAuth</CardDescription>
+          </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
@@ -106,6 +118,9 @@ export default function RegisterPage() {
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 required
               />
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                Min 8 characters with uppercase, lowercase, number, and symbol (@$!%*?&)
+              </p>
             </div>
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? "Creating Account..." : "Register"}
@@ -120,7 +135,8 @@ export default function RegisterPage() {
             </Button>
           </p>
         </CardFooter>
-      </Card>
+        </Card>
+      </motion.div>
     </div>
   );
 }

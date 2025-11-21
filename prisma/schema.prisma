@@ -35,6 +35,7 @@ model User {
   customRoleId          String?
   isActive              Boolean   @default(true)
   requirePasswordChange Boolean   @default(false)
+  requireMfaSetup       Boolean   @default(false)
   mfaEnabled            Boolean   @default(false)
   mfaSecret             String?
   mfaBackupCodes        String[]  @default([])

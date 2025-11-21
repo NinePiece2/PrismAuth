@@ -23,8 +23,9 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { Shield, Download } from "lucide-react";
+import { Shield, Download, Lock } from "lucide-react";
 import Image from "next/image";
+import { motion } from "framer-motion";
 
 interface User {
   id: string;
@@ -36,7 +37,7 @@ interface User {
 
 interface MfaSetupData {
   secret: string;
-  qrCodeUrl: string;
+  qrCode: string;
   backupCodes: string[];
 }
 
@@ -49,6 +50,10 @@ export default function SettingsPage() {
   const [mfaSetupData, setMfaSetupData] = useState<MfaSetupData | null>(null);
   const [verificationCode, setVerificationCode] = useState("");
   const [disableCode, setDisableCode] = useState("");
+  const [showChangePassword, setShowChangePassword] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   useEffect(() => {
     checkAuth();
@@ -168,6 +173,63 @@ export default function SettingsPage() {
     }
   };
 
+  const handleChangePassword = async () => {
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      toast.error("All fields are required");
+      return;
+    }
+
+    if (currentPassword === newPassword) {
+      toast.error("New password must be different from current password");
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      toast.error("New passwords do not match");
+      return;
+    }
+
+    if (newPassword.length < 8) {
+      toast.error("New password must be at least 8 characters");
+      return;
+    }
+
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/;
+    if (!passwordRegex.test(newPassword)) {
+      toast.error("Password must contain uppercase, lowercase, number, and symbol (@$!%*?&)");
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/auth/change-password", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          currentPassword,
+          newPassword,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        toast.error(data.error || "Failed to change password");
+        return;
+      }
+
+      toast.success("Password changed successfully");
+      setShowChangePassword(false);
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+    } catch (error) {
+      toast.error("An error occurred while changing password");
+      console.error(error);
+    }
+  };
+
   const downloadBackupCodes = () => {
     if (!mfaSetupData?.backupCodes) return;
 
@@ -186,31 +248,71 @@ export default function SettingsPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <p>Loading...</p>
-      </div>
+      <motion.div 
+        className="min-h-screen flex items-center justify-center bg-background"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.3 }}
+      >
+        <motion.p
+          animate={{ opacity: [0.5, 1, 0.5] }}
+          transition={{ duration: 1.5, repeat: Infinity }}
+        >
+          Loading...
+        </motion.p>
+      </motion.div>
     );
   }
 
   return (
     <div className="min-h-screen bg-background p-8">
-      <div className="absolute top-4 right-4">
+      <motion.div 
+        className="absolute top-4 right-4"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
         <ThemeToggle />
-      </div>
-      <div className="max-w-4xl mx-auto space-y-6">
-        <div className="flex items-center justify-between">
+      </motion.div>
+      <motion.div 
+        className="max-w-4xl mx-auto space-y-6"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <motion.div 
+          className="flex items-center justify-between"
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+        >
           <div>
             <h1 className="text-3xl font-bold">Settings</h1>
             <p className="text-gray-600 dark:text-gray-400 mt-1">
               Manage your account settings and security
             </p>
           </div>
-          <Button variant="outline" onClick={() => router.push("/")}>
-            Back to Home
+          <Button variant="outline" onClick={() => {
+            try {
+              if (window.history.length > 1) {
+                router.back();
+              } else {
+                router.push("/");
+              }
+            } catch {
+              router.push("/");
+            }
+          }}>
+            Back
           </Button>
-        </div>
+        </motion.div>
 
-        <Card>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+        >
+          <Card>
           <CardHeader>
             <CardTitle>Account Information</CardTitle>
             <CardDescription>Your account details</CardDescription>
@@ -231,26 +333,55 @@ export default function SettingsPage() {
               </Badge>
             </div>
           </CardContent>
-        </Card>
+          </Card>
+        </motion.div>
 
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="flex items-center gap-2">
-                  <Shield className="h-5 w-5" />
-                  Two-Factor Authentication
-                </CardTitle>
-                <CardDescription>
-                  Add an extra layer of security to your account
-                </CardDescription>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+        >
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Lock className="h-5 w-5" />
+                Password
+              </CardTitle>
+            <CardDescription>
+              Change your password to keep your account secure
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button onClick={() => setShowChangePassword(true)}>
+              Change Password
+            </Button>
+          </CardContent>
+          </Card>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
+        >
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <CardTitle className="flex items-center gap-2">
+                    <Shield className="h-5 w-5" />
+                    Two-Factor Authentication
+                  </CardTitle>
+                  <CardDescription>
+                    Add an extra layer of security to your account
+                  </CardDescription>
+                </div>
+                {user?.mfaEnabled ? (
+                  <Badge variant="default" className="ml-4">Enabled</Badge>
+                ) : (
+                  <Badge variant="secondary" className="ml-4">Disabled</Badge>
+                )}
               </div>
-              {user?.mfaEnabled ? (
-                <Badge variant="default">Enabled</Badge>
-              ) : (
-                <Badge variant="secondary">Disabled</Badge>
-              )}
-            </div>
           </CardHeader>
           <CardContent>
             {user?.mfaEnabled ? (
@@ -275,8 +406,9 @@ export default function SettingsPage() {
               </div>
             )}
           </CardContent>
-        </Card>
-      </div>
+          </Card>
+        </motion.div>
+      </motion.div>
 
       {/* MFA Setup Dialog */}
       <Dialog open={showMfaSetup} onOpenChange={setShowMfaSetup}>
@@ -293,10 +425,10 @@ export default function SettingsPage() {
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
                 Use your authenticator app (Google Authenticator, Authy, etc.) to scan this code:
               </p>
-              {mfaSetupData?.qrCodeUrl && (
+              {mfaSetupData?.qrCode && (
                 <div className="flex justify-center p-4 bg-white rounded-lg">
                   <Image
-                    src={mfaSetupData.qrCodeUrl}
+                    src={mfaSetupData.qrCode}
                     alt="QR Code"
                     width={200}
                     height={200}
@@ -391,6 +523,66 @@ export default function SettingsPage() {
             </Button>
             <Button variant="destructive" onClick={handleDisableMfa}>
               Disable 2FA
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Change Password Dialog */}
+      <Dialog open={showChangePassword} onOpenChange={setShowChangePassword}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Change Password</DialogTitle>
+            <DialogDescription>
+              Enter your current password and choose a new one
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="currentPassword">Current Password</Label>
+              <Input
+                id="currentPassword"
+                type="password"
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+                placeholder="Enter current password"
+              />
+            </div>
+            <div>
+              <Label htmlFor="newPassword">New Password</Label>
+              <Input
+                id="newPassword"
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="Min 8 chars, with A-Z, a-z, 0-9, symbol"
+              />
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                Must include uppercase, lowercase, number, and symbol (@$!%*?&)
+              </p>
+            </div>
+            <div>
+              <Label htmlFor="confirmPassword">Confirm New Password</Label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Confirm new password"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => {
+              setShowChangePassword(false);
+              setCurrentPassword("");
+              setNewPassword("");
+              setConfirmPassword("");
+            }}>
+              Cancel
+            </Button>
+            <Button onClick={handleChangePassword}>
+              Change Password
             </Button>
           </DialogFooter>
         </DialogContent>

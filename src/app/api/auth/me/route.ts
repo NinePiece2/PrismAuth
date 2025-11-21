@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/session";
+import { prisma } from "@/lib/db";
 
 /**
  * Get current user session
@@ -13,6 +14,12 @@ export async function GET() {
       return NextResponse.json({ authenticated: false }, { status: 401 });
     }
 
+    // Fetch additional user data from database
+    const dbUser = await prisma.user.findUnique({
+      where: { id: user.userId },
+      select: { mfaEnabled: true },
+    });
+
     return NextResponse.json({
       authenticated: true,
       user: {
@@ -21,6 +28,7 @@ export async function GET() {
         name: user.name,
         tenantId: user.tenantId,
         role: user.role,
+        mfaEnabled: dbUser?.mfaEnabled ?? false,
       },
     });
   } catch (error) {

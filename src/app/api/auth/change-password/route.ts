@@ -3,11 +3,20 @@ import { prisma } from "@/lib/db";
 import { hashPassword, verifyPassword } from "@/lib/crypto";
 import { createSession } from "@/lib/session";
 import { z } from "zod";
+import { emailService, emailTemplates } from "@/lib/email";
+
+const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/;
 
 const changePasswordSchema = z.object({
   userId: z.string(),
   currentPassword: z.string(),
-  newPassword: z.string().min(8, "Password must be at least 8 characters"),
+  newPassword: z
+    .string()
+    .min(8, "Password must be at least 8 characters")
+    .regex(
+      passwordRegex,
+      "Password must contain at least one uppercase letter, one lowercase letter, one number, and one symbol (@$!%*?&)"
+    ),
 });
 
 /**
@@ -44,6 +53,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Check if new password is different from current password
+    const isSamePassword = await verifyPassword(
+      validatedData.newPassword,
+      user.password,
+    );
+
+    if (isSamePassword) {
+      return NextResponse.json(
+        { error: "New password must be different from current password" },
+        { status: 400 },
+      );
+    }
+
     // Hash new password
     const hashedPassword = await hashPassword(validatedData.newPassword);
 
@@ -55,6 +77,46 @@ export async function POST(request: NextRequest) {
         requirePasswordChange: false,
       },
     });
+
+    // Send password changed notification email
+    try {
+      const { config } = await import("@/lib/config");
+      const emailTemplate = emailTemplates.passwordChanged(user.name || undefined);
+      
+      await emailService.send({
+        to: user.email,
+        from: config.email.from,
+        subject: emailTemplate.subject,
+        html: emailTemplate.html,
+        text: emailTemplate.text,
+      });
+    } catch (emailError) {
+      console.error("Failed to send password changed email:", emailError);
+      // Don't fail password change if email fails
+    }
+
+    // Check if MFA setup is required
+    if (user.requireMfaSetup && !user.mfaEnabled) {
+      // Create session first so user can access settings
+      await createSession({
+        id: user.id,
+        tenantId: user.tenantId,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+      });
+
+      return NextResponse.json({
+        success: true,
+        requireMfaSetup: true,
+        user: {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          role: user.role,
+        },
+      });
+    }
 
     // Check if user has MFA enabled
     if (user.mfaEnabled) {
