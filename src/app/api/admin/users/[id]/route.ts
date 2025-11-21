@@ -6,6 +6,7 @@ import { ZodError, z } from "zod";
 const updateUserSchema = z.object({
   role: z.enum(["user", "admin"]).optional(),
   customRoleId: z.string().nullable().optional(),
+  name: z.string().nullable().optional(),
 });
 
 /**
@@ -63,6 +64,7 @@ export async function PATCH(
       data: {
         ...(validatedData.role && { role: validatedData.role }),
         ...(validatedData.customRoleId !== undefined && { customRoleId: validatedData.customRoleId }),
+        ...(validatedData.name !== undefined && { name: validatedData.name }),
       },
       select: {
         id: true,

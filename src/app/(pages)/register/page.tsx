@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,24 +13,60 @@ import { motion } from "framer-motion";
 export default function RegisterPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [isCheckingSetup, setIsCheckingSetup] = useState(true);
+  const [tenantDomain, setTenantDomain] = useState("");
+  const [username, setUsername] = useState("");
   const [formData, setFormData] = useState({
-    email: "",
     password: "",
     name: "",
   });
+
+  useEffect(() => {
+    const checkSetup = async () => {
+      try {
+        const response = await fetch("/api/setup/check");
+        const data = await response.json();
+        if (data.setupRequired) {
+          router.push("/setup");
+          return;
+        }
+        
+        // Fetch tenant info - for now we'll get the first tenant
+        // In a multi-tenant setup, you'd select the tenant differently
+        const tenantsResponse = await fetch("/api/admin/tenants");
+        const tenantsData = await tenantsResponse.json();
+        if (tenantsData.tenants && tenantsData.tenants.length > 0) {
+          setTenantDomain(tenantsData.tenants[0].domain);
+        }
+      } catch (error) {
+        console.error("Setup check failed:", error);
+      } finally {
+        setIsCheckingSetup(false);
+      }
+    };
+    checkSetup();
+  }, [router]);
+
+  const handleUsernameChange = (value: string) => {
+    // Remove @ and domain if user pastes full email
+    let cleanValue = value.replace(`@${tenantDomain}`, '');
+    // Remove any @ symbols
+    cleanValue = cleanValue.replace(/@/g, '');
+    setUsername(cleanValue);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Extract tenant domain from email
-    const emailParts = formData.email.split("@");
-    if (emailParts.length !== 2) {
-      toast.error("Please enter a valid email address");
+    if (!username) {
+      toast.error("Please enter a username");
       setIsLoading(false);
       return;
     }
-    const tenantDomain = emailParts[1];
+
+    // Construct full email with domain
+    const fullEmail = `${username}@${tenantDomain}`;
 
     try {
       const response = await fetch("/api/auth/register", {
@@ -39,7 +75,9 @@ export default function RegisterPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          ...formData,
+          email: fullEmail,
+          password: formData.password,
+          name: formData.name,
           tenantDomain,
         }),
       });
@@ -60,6 +98,10 @@ export default function RegisterPage() {
       setIsLoading(false);
     }
   };
+
+  if (isCheckingSetup) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
@@ -95,17 +137,23 @@ export default function RegisterPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="john@example.com"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                required
-              />
+              <Label htmlFor="username">Username</Label>
+              <div className="relative">
+                <Input
+                  id="username"
+                  type="text"
+                  placeholder="john"
+                  value={username}
+                  onChange={(e) => handleUsernameChange(e.target.value)}
+                  required
+                  className="pr-32"
+                />
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-500 dark:text-gray-400 pointer-events-none">
+                  @{tenantDomain}
+                </div>
+              </div>
               <p className="text-xs text-gray-500 dark:text-gray-400">
-                Your tenant domain will be extracted from your email address
+                Your email will be: <span className="font-medium">{username}@{tenantDomain}</span>
               </p>
             </div>
             <div className="space-y-2">

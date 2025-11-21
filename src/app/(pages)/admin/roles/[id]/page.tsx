@@ -40,6 +40,7 @@ import {
 import { toast } from "sonner";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { ArrowLeft } from "lucide-react";
+import { motion } from "framer-motion";
 
 interface Application {
   id: string;
@@ -252,7 +253,12 @@ export default function RolePermissionsPage({ params }: { params: Promise<{ id: 
 
   return (
     <div className="min-h-screen bg-background">
-      <nav className="bg-card border-b border-border">
+      <motion.nav 
+        className="bg-card border-b border-border"
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.3 }}
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center space-x-8">
@@ -301,9 +307,14 @@ export default function RolePermissionsPage({ params }: { params: Promise<{ id: 
             </div>
           </div>
         </div>
-      </nav>
+      </motion.nav>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+      <motion.div 
+        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.1 }}
+      >
         <div className="flex items-center gap-4">
           <Button
             variant="ghost"
@@ -396,10 +407,9 @@ export default function RolePermissionsPage({ params }: { params: Promise<{ id: 
             )}
           </CardContent>
         </Card>
-      </div>
 
-      {/* Add Permission Dialog */}
-      <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+        {/* Add Permission Dialog */}
+        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>Add Application Permissions</DialogTitle>
@@ -504,6 +514,7 @@ export default function RolePermissionsPage({ params }: { params: Promise<{ id: 
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      </motion.div>
     </div>
   );
 }

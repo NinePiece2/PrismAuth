@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,17 +22,48 @@ interface MfaSetupData {
 export default function LoginPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [isCheckingSetup, setIsCheckingSetup] = useState(true);
   const [step, setStep] = useState<LoginStep>("login");
   const [userId, setUserId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
+  const [detectedDomain, setDetectedDomain] = useState<string | null>(null);
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [mfaCode, setMfaCode] = useState("");
   const [mfaSetupData, setMfaSetupData] = useState<MfaSetupData | null>(null);
   const [mfaSetupCode, setMfaSetupCode] = useState("");
+
+  useEffect(() => {
+    const checkSetup = async () => {
+      try {
+        const response = await fetch("/api/setup/check");
+        const data = await response.json();
+        if (data.setupRequired) {
+          router.push("/setup");
+        }
+      } catch (error) {
+        console.error("Setup check failed:", error);
+      } finally {
+        setIsCheckingSetup(false);
+      }
+    };
+    checkSetup();
+  }, [router]);
+
+  const handleEmailChange = (email: string) => {
+    setFormData({ ...formData, email });
+    
+    // Extract and display domain
+    const emailParts = email.split("@");
+    if (emailParts.length === 2 && emailParts[1]) {
+      setDetectedDomain(emailParts[1]);
+    } else {
+      setDetectedDomain(null);
+    }
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -293,6 +324,10 @@ export default function LoginPage() {
     }
   };
 
+  if (isCheckingSetup) {
+    return null; // Or a loading spinner if you prefer
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <motion.div 
@@ -325,12 +360,14 @@ export default function LoginPage() {
                     type="email"
                     placeholder="john@example.com"
                     value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    onChange={(e) => handleEmailChange(e.target.value)}
                     required
                   />
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    Your tenant domain will be extracted from your email address
-                  </p>
+                  {detectedDomain && (
+                    <p className="text-xs text-purple-600 dark:text-purple-400">
+                      Logging in to tenant: <span className="font-semibold">{detectedDomain}</span>
+                    </p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="password">Password</Label>

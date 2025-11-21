@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,12 +19,18 @@ export default function Home() {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    checkAuth();
-  }, []);
-
-  const checkAuth = async () => {
+  const checkSetupAndAuth = useCallback(async () => {
     try {
+      // First check if setup is required
+      const setupResponse = await fetch("/api/setup/check");
+      const setupData = await setupResponse.json();
+
+      if (setupData.setupRequired) {
+        router.push("/setup");
+        return;
+      }
+
+      // Then check authentication
       const response = await fetch("/api/auth/me");
       const data = await response.json();
 
@@ -36,7 +42,11 @@ export default function Home() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [router]);
+
+  useEffect(() => {
+    checkSetupAndAuth();
+  }, [checkSetupAndAuth]);
 
   const handleLogout = async () => {
     try {

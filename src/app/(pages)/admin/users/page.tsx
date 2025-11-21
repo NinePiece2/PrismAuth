@@ -65,8 +65,11 @@ export default function AdminUsersPage() {
   const [customRoles, setCustomRoles] = useState<CustomRole[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
+  const [userToEdit, setUserToEdit] = useState<User | null>(null);
+  const [editName, setEditName] = useState("");
   const [currentUser, setCurrentUser] = useState<{ id: string; email: string; role: string; name: string | null } | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [formData, setFormData] = useState({
@@ -153,7 +156,7 @@ export default function AdminUsersPage() {
 
       toast.success("User created successfully");
       setIsCreateDialogOpen(false);
-      setFormData({ email: "", password: "", name: "", role: "user", customRoleId: "", requirePasswordChange: false });
+      setFormData({ email: "", password: "", name: "", role: "user", customRoleId: "", requirePasswordChange: false, requireMfaSetup: false });
       fetchUsers();
     } catch (error) {
       toast.error("An error occurred while creating user");
@@ -179,6 +182,42 @@ export default function AdminUsersPage() {
       }
 
       toast.success("User role updated successfully");
+      fetchUsers();
+    } catch (error) {
+      toast.error("An error occurred while updating user");
+      console.error(error);
+    }
+  };
+
+  const openEditDialog = (user: User) => {
+    setUserToEdit(user);
+    setEditName(user.name || "");
+    setIsEditDialogOpen(true);
+  };
+
+  const handleUpdateName = async () => {
+    if (!userToEdit) return;
+
+    try {
+      const response = await fetch(`/api/admin/users/${userToEdit.id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ name: editName || null }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        toast.error(data.error || "Failed to update user name");
+        return;
+      }
+
+      toast.success("User name updated successfully");
+      setIsEditDialogOpen(false);
+      setUserToEdit(null);
+      setEditName("");
       fetchUsers();
     } catch (error) {
       toast.error("An error occurred while updating user");
@@ -271,7 +310,12 @@ export default function AdminUsersPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <nav className="bg-card border-b border-border">
+      <motion.nav 
+        className="bg-card border-b border-border"
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.3 }}
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center space-x-8">
@@ -320,9 +364,14 @@ export default function AdminUsersPage() {
             </div>
           </div>
         </div>
-      </nav>
+      </motion.nav>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <motion.div 
+        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.1 }}
+      >
         <Card>
           <CardHeader>
             <div className="flex justify-between items-center">
@@ -493,6 +542,48 @@ export default function AdminUsersPage() {
                 </DialogContent>
               </Dialog>
 
+              {/* Edit User Name Dialog */}
+              <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Edit User Name</DialogTitle>
+                    <DialogDescription>
+                      Update the display name for {userToEdit?.email}
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4 py-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="editName">Name</Label>
+                      <Input
+                        id="editName"
+                        placeholder="John Doe"
+                        value={editName}
+                        onChange={(e) => setEditName(e.target.value)}
+                      />
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        Leave empty to remove the name
+                      </p>
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        setIsEditDialogOpen(false);
+                        setUserToEdit(null);
+                        setEditName("");
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                    <Button type="button" onClick={handleUpdateName}>
+                      Save Changes
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+
               {/* Delete Confirmation Dialog */}
               <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
                 <DialogContent>
@@ -638,14 +729,23 @@ export default function AdminUsersPage() {
                       {new Date(user.createdAt).toLocaleDateString()}
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => openDeleteDialog(user)}
-                        disabled={user.id === currentUser?.id}
-                      >
-                        Delete
-                      </Button>
+                      <div className="flex justify-end gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => openEditDialog(user)}
+                        >
+                          Edit
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => openDeleteDialog(user)}
+                          disabled={user.id === currentUser?.id}
+                        >
+                          Delete
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                   ))
@@ -654,7 +754,7 @@ export default function AdminUsersPage() {
             </Table>
           </CardContent>
         </Card>
-      </div>
+      </motion.div>
     </div>
   );
 }
