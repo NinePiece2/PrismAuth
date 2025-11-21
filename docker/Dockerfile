@@ -13,7 +13,7 @@ COPY . .
 RUN bun run db:generate
 
 RUN bun run build
-RUN bun prune --omit=dev 
+# RUN bun prune --omit=dev 
 
 FROM oven/bun:slim AS deploy
 
