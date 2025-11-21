@@ -136,8 +136,8 @@ See [CLIENT_INTEGRATION.md](./docs/CLIENT_INTEGRATION.md) for details on integra
 
 ## Contributing
 
-This is a private project. Please see the maintainer for contribution guidelines.
+Feel free to make PRs or Issues.
 
 ## License
 
-Proprietary - All rights reserved.
+MIT
