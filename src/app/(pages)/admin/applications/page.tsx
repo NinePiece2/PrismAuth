@@ -237,7 +237,7 @@ export default function AdminApplicationsPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <motion.nav 
+      <motion.nav
         className="bg-card border-b border-border"
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -248,10 +248,7 @@ export default function AdminApplicationsPage() {
             <div className="flex items-center space-x-8">
               <h1 className="text-xl font-bold">PrismAuth Admin</h1>
               <div className="flex space-x-4">
-                <Button
-                  variant="ghost"
-                  onClick={() => router.push("/")}
-                >
+                <Button variant="ghost" onClick={() => router.push("/")}>
                   Home
                 </Button>
                 <Button
@@ -293,7 +290,7 @@ export default function AdminApplicationsPage() {
         </div>
       </motion.nav>
 
-      <motion.div 
+      <motion.div
         className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -322,7 +319,10 @@ export default function AdminApplicationsPage() {
                       Register a new OAuth2 application with redirect URLs
                     </DialogDescription>
                   </DialogHeader>
-                  <form onSubmit={handleCreateApplication} className="space-y-4">
+                  <form
+                    onSubmit={handleCreateApplication}
+                    className="space-y-4"
+                  >
                     <div className="space-y-2">
                       <Label htmlFor="name">Application Name</Label>
                       <Input
@@ -369,8 +369,8 @@ export default function AdminApplicationsPage() {
                         required
                       />
                       <p className="text-sm text-gray-500">
-                        These are the allowed URLs where users will be redirected
-                        after authentication
+                        These are the allowed URLs where users will be
+                        redirected after authentication
                       </p>
                     </div>
                     <div className="space-y-2">
@@ -447,66 +447,69 @@ export default function AdminApplicationsPage() {
               <TableBody>
                 {filteredApplications.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8 text-gray-500">
+                    <TableCell
+                      colSpan={6}
+                      className="text-center py-8 text-gray-500"
+                    >
                       No applications found matching your search.
                     </TableCell>
                   </TableRow>
                 ) : (
                   filteredApplications.map((app) => (
-                  <TableRow key={app.id}>
-                    <TableCell className="font-medium">
-                      <div>
-                        <div>{app.name}</div>
-                        {app.description && (
-                          <div className="text-sm text-gray-500">
-                            {app.description}
-                          </div>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <code className="text-xs bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">
-                        {app.clientId}
-                      </code>
-                    </TableCell>
-                    <TableCell>
-                      <div className="text-sm space-y-1">
-                        {app.redirectUris.map((uri, index) => (
-                          <div key={index} className="truncate max-w-xs">
-                            {uri}
-                          </div>
-                        ))}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-wrap gap-1">
-                        {app.allowedScopes.slice(0, 3).map((scope, index) => (
-                          <Badge key={index} variant="secondary">
-                            {scope}
-                          </Badge>
-                        ))}
-                        {app.allowedScopes.length > 3 && (
-                          <Badge variant="secondary">
-                            +{app.allowedScopes.length - 3}
-                          </Badge>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={app.isActive ? "default" : "secondary"}>
-                        {app.isActive ? "Active" : "Inactive"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => handleDeleteApplication(app.clientId)}
-                      >
-                        Delete
-                      </Button>
-                    </TableCell>
-                  </TableRow>
+                    <TableRow key={app.id}>
+                      <TableCell className="font-medium">
+                        <div>
+                          <div>{app.name}</div>
+                          {app.description && (
+                            <div className="text-sm text-gray-500">
+                              {app.description}
+                            </div>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <code className="text-xs bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">
+                          {app.clientId}
+                        </code>
+                      </TableCell>
+                      <TableCell>
+                        <div className="text-sm space-y-1">
+                          {app.redirectUris.map((uri, index) => (
+                            <div key={index} className="truncate max-w-xs">
+                              {uri}
+                            </div>
+                          ))}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-wrap gap-1">
+                          {app.allowedScopes.slice(0, 3).map((scope, index) => (
+                            <Badge key={index} variant="secondary">
+                              {scope}
+                            </Badge>
+                          ))}
+                          {app.allowedScopes.length > 3 && (
+                            <Badge variant="secondary">
+                              +{app.allowedScopes.length - 3}
+                            </Badge>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={app.isActive ? "default" : "secondary"}>
+                          {app.isActive ? "Active" : "Inactive"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => handleDeleteApplication(app.clientId)}
+                        >
+                          Delete
+                        </Button>
+                      </TableCell>
+                    </TableRow>
                   ))
                 )}
               </TableBody>
@@ -515,62 +518,62 @@ export default function AdminApplicationsPage() {
         </Card>
 
         {/* Client Secret Dialog */}
-      <Dialog open={showSecretDialog} onOpenChange={setShowSecretDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Application Created Successfully</DialogTitle>
-            <DialogDescription>
-              Save these credentials securely. The client secret will not be shown
-              again.
-            </DialogDescription>
-          </DialogHeader>
-          {createdClient && (
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label>Client ID</Label>
-                <div className="flex gap-2">
-                  <Input value={createdClient.clientId} readOnly />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => copyToClipboard(createdClient.clientId)}
-                  >
-                    Copy
-                  </Button>
+        <Dialog open={showSecretDialog} onOpenChange={setShowSecretDialog}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Application Created Successfully</DialogTitle>
+              <DialogDescription>
+                Save these credentials securely. The client secret will not be
+                shown again.
+              </DialogDescription>
+            </DialogHeader>
+            {createdClient && (
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Client ID</Label>
+                  <div className="flex gap-2">
+                    <Input value={createdClient.clientId} readOnly />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => copyToClipboard(createdClient.clientId)}
+                    >
+                      Copy
+                    </Button>
+                  </div>
                 </div>
-              </div>
-              <div className="space-y-2">
-                <Label>Client Secret</Label>
-                <div className="flex gap-2">
-                  <Input
-                    value={createdClient.clientSecret || ""}
-                    readOnly
-                    type="password"
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() =>
-                      copyToClipboard(createdClient.clientSecret || "")
-                    }
-                  >
-                    Copy
-                  </Button>
+                <div className="space-y-2">
+                  <Label>Client Secret</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      value={createdClient.clientSecret || ""}
+                      readOnly
+                      type="password"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() =>
+                        copyToClipboard(createdClient.clientSecret || "")
+                      }
+                    >
+                      Copy
+                    </Button>
+                  </div>
                 </div>
+                <p className="text-sm text-red-600 dark:text-red-400">
+                  ⚠️ Make sure to copy and save the client secret now. You will
+                  not be able to see it again!
+                </p>
               </div>
-              <p className="text-sm text-red-600 dark:text-red-400">
-                ⚠️ Make sure to copy and save the client secret now. You
-                will not be able to see it again!
-              </p>
-            </div>
-          )}
-          <DialogFooter>
-            <Button onClick={() => setShowSecretDialog(false)}>
-              I have saved the credentials
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            )}
+            <DialogFooter>
+              <Button onClick={() => setShowSecretDialog(false)}>
+                I have saved the credentials
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </motion.div>
     </div>
   );

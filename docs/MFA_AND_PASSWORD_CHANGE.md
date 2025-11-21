@@ -80,13 +80,14 @@ Initiates MFA setup for the current user.
 **Request**: None (uses current session)
 
 **Response**:
+
 ```json
 {
   "secret": "JBSWY3DPEHPK3PXP",
   "qrCodeUrl": "data:image/png;base64,...",
   "backupCodes": [
     "12345678",
-    "23456789",
+    "23456789"
     // ... 10 codes total
   ]
 }
@@ -97,6 +98,7 @@ Initiates MFA setup for the current user.
 Verifies the MFA code and enables MFA.
 
 **Request**:
+
 ```json
 {
   "code": "123456"
@@ -104,6 +106,7 @@ Verifies the MFA code and enables MFA.
 ```
 
 **Response**:
+
 ```json
 {
   "success": true
@@ -115,6 +118,7 @@ Verifies the MFA code and enables MFA.
 Disables MFA for the current user.
 
 **Request**:
+
 ```json
 {
   "code": "123456"
@@ -122,6 +126,7 @@ Disables MFA for the current user.
 ```
 
 **Response**:
+
 ```json
 {
   "success": true
@@ -133,6 +138,7 @@ Disables MFA for the current user.
 Verifies MFA code during login process.
 
 **Request**:
+
 ```json
 {
   "userId": "user-id",
@@ -141,6 +147,7 @@ Verifies MFA code during login process.
 ```
 
 **Response**:
+
 ```json
 {
   "success": true,
@@ -160,6 +167,7 @@ Verifies MFA code during login process.
 Changes password for users with `requirePasswordChange` flag.
 
 **Request**:
+
 ```json
 {
   "userId": "user-id",
@@ -169,6 +177,7 @@ Changes password for users with `requirePasswordChange` flag.
 ```
 
 **Response (No MFA)**:
+
 ```json
 {
   "success": true,
@@ -182,6 +191,7 @@ Changes password for users with `requirePasswordChange` flag.
 ```
 
 **Response (MFA Enabled)**:
+
 ```json
 {
   "success": true,
@@ -198,6 +208,7 @@ Changes password for users with `requirePasswordChange` flag.
 Updated to accept `requirePasswordChange` field.
 
 **Request**:
+
 ```json
 {
   "email": "newuser@example.com",
@@ -320,6 +331,7 @@ ALTER TABLE "User" ADD COLUMN "requirePasswordChange" BOOLEAN NOT NULL DEFAULT f
 ```
 
 Existing users will have:
+
 - `mfaEnabled` set to `false`
 - `mfaSecret` set to `null`
 - `mfaBackupCodes` as empty array

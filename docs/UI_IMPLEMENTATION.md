@@ -5,39 +5,44 @@
 A complete user interface for PrismAuth using Shadcn UI with the following features:
 
 ### 1. **Authentication Pages**
-   - ✅ `/register` - User registration form
-   - ✅ `/login` - User login form
-   - ✅ `/` - Dashboard home page (authenticated view)
+
+- ✅ `/register` - User registration form
+- ✅ `/login` - User login form
+- ✅ `/` - Dashboard home page (authenticated view)
 
 ### 2. **Admin Pages** (Role-based access control)
-   - ✅ `/admin/users` - User management
-     - View all users in a table
-     - Add new users manually
-     - Change user roles (user/admin)
-     - Delete users
-   
-   - ✅ `/admin/applications` - OAuth2 application management
-     - View all registered applications
-     - Add new OAuth2 applications with redirect URIs
-     - Display client credentials (ID and secret)
-     - Delete applications
+
+- ✅ `/admin/users` - User management
+  - View all users in a table
+  - Add new users manually
+  - Change user roles (user/admin)
+  - Delete users
+
+- ✅ `/admin/applications` - OAuth2 application management
+  - View all registered applications
+  - Add new OAuth2 applications with redirect URIs
+  - Display client credentials (ID and secret)
+  - Delete applications
 
 ### 3. **Components Installed**
-   - Button, Input, Label, Form
-   - Card, Table, Dialog
-   - Select, Badge, Sonner (toast notifications)
+
+- Button, Input, Label, Form
+- Card, Table, Dialog
+- Select, Badge, Sonner (toast notifications)
 
 ### 4. **API Routes Created**
-   - `/api/admin/users` - GET (list), POST (create)
-   - `/api/admin/users/[id]` - PATCH (update role), DELETE (delete user)
+
+- `/api/admin/users` - GET (list), POST (create)
+- `/api/admin/users/[id]` - PATCH (update role), DELETE (delete user)
 
 ### 5. **Features**
-   - Responsive design (mobile and desktop)
-   - Toast notifications for user feedback
-   - Role-based access control (admin only routes)
-   - Secure session management
-   - Client secret shown only once (security best practice)
-   - Form validation with proper error handling
+
+- Responsive design (mobile and desktop)
+- Toast notifications for user feedback
+- Role-based access control (admin only routes)
+- Secure session management
+- Client secret shown only once (security best practice)
+- Form validation with proper error handling
 
 ## File Structure
 
@@ -66,11 +71,13 @@ src/
 ## Quick Start
 
 ### 1. Install Dependencies
+
 ```bash
 bun install
 ```
 
 ### 2. Set Up Database
+
 ```bash
 # Run migrations
 bun run db:migrate
@@ -80,6 +87,7 @@ bun run db:seed
 ```
 
 ### 3. Create First Admin User
+
 ```bash
 # Option 1: Register via UI at /register then update role in database
 UPDATE "User" SET role = 'admin' WHERE email = 'your-email@example.com';
@@ -88,11 +96,13 @@ UPDATE "User" SET role = 'admin' WHERE email = 'your-email@example.com';
 ```
 
 ### 4. Start Development Server
+
 ```bash
 bun run dev
 ```
 
 ### 5. Access the UI
+
 - Home: http://localhost:4000/
 - Login: http://localhost:4000/login
 - Register: http://localhost:4000/register
@@ -102,6 +112,7 @@ bun run dev
 ## Key Features
 
 ### Security
+
 - ✅ Admin routes protected by role check
 - ✅ Admins cannot delete themselves
 - ✅ Admins cannot change their own role
@@ -109,6 +120,7 @@ bun run dev
 - ✅ Session-based authentication
 
 ### User Experience
+
 - ✅ Clean, modern UI with Shadcn components
 - ✅ Responsive design
 - ✅ Toast notifications for all actions
@@ -116,6 +128,7 @@ bun run dev
 - ✅ Confirmation dialogs for destructive actions
 
 ### Admin Capabilities
+
 - ✅ View all users in tenant
 - ✅ Create users with specific roles
 - ✅ Change user roles on the fly

@@ -22,7 +22,11 @@ export function AnimatedPage({ children, className = "" }: AnimatedPageProps) {
   );
 }
 
-export function AnimatedCard({ children, delay = 0, className = "" }: AnimatedPageProps & { delay?: number }) {
+export function AnimatedCard({
+  children,
+  delay = 0,
+  className = "",
+}: AnimatedPageProps & { delay?: number }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -35,7 +39,11 @@ export function AnimatedCard({ children, delay = 0, className = "" }: AnimatedPa
   );
 }
 
-export function FadeIn({ children, delay = 0, className = "" }: AnimatedPageProps & { delay?: number }) {
+export function FadeIn({
+  children,
+  delay = 0,
+  className = "",
+}: AnimatedPageProps & { delay?: number }) {
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -48,12 +56,15 @@ export function FadeIn({ children, delay = 0, className = "" }: AnimatedPageProp
   );
 }
 
-export function SlideIn({ 
-  children, 
-  delay = 0, 
+export function SlideIn({
+  children,
+  delay = 0,
   direction = "left",
-  className = "" 
-}: AnimatedPageProps & { delay?: number; direction?: "left" | "right" | "up" | "down" }) {
+  className = "",
+}: AnimatedPageProps & {
+  delay?: number;
+  direction?: "left" | "right" | "up" | "down";
+}) {
   const directionMap = {
     left: { x: -20, y: 0 },
     right: { x: 20, y: 0 },
@@ -73,7 +84,11 @@ export function SlideIn({
   );
 }
 
-export function ScaleIn({ children, delay = 0, className = "" }: AnimatedPageProps & { delay?: number }) {
+export function ScaleIn({
+  children,
+  delay = 0,
+  className = "",
+}: AnimatedPageProps & { delay?: number }) {
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
@@ -86,7 +101,10 @@ export function ScaleIn({ children, delay = 0, className = "" }: AnimatedPagePro
   );
 }
 
-export function StaggerContainer({ children, className = "" }: AnimatedPageProps) {
+export function StaggerContainer({
+  children,
+  className = "",
+}: AnimatedPageProps) {
   return (
     <motion.div
       initial="hidden"

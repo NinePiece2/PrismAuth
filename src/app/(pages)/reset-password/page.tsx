@@ -31,7 +31,7 @@ function ResetPasswordContent() {
   useEffect(() => {
     const tokenParam = searchParams.get("token");
     setToken(tokenParam);
-    
+
     if (tokenParam) {
       verifyToken(tokenParam);
     } else {
@@ -41,7 +41,9 @@ function ResetPasswordContent() {
 
   const verifyToken = async (tokenValue: string) => {
     try {
-      const response = await fetch(`/api/auth/reset-password?token=${tokenValue}`);
+      const response = await fetch(
+        `/api/auth/reset-password?token=${tokenValue}`,
+      );
       const data = await response.json();
 
       if (data.valid) {
@@ -95,7 +97,7 @@ function ResetPasswordContent() {
 
       setResetSuccess(true);
       toast.success("Password reset successfully!");
-      
+
       // Redirect to login after 2 seconds
       setTimeout(() => {
         router.push("/login");
@@ -142,7 +144,8 @@ function ResetPasswordContent() {
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              Password reset links expire after 1 hour. Please request a new one.
+              Password reset links expire after 1 hour. Please request a new
+              one.
             </p>
             <Button
               onClick={() => router.push("/forgot-password")}
@@ -183,10 +186,7 @@ function ResetPasswordContent() {
             <p className="text-sm text-gray-600 dark:text-gray-400 text-center">
               You can now log in with your new password.
             </p>
-            <Button
-              onClick={() => router.push("/login")}
-              className="w-full"
-            >
+            <Button onClick={() => router.push("/login")} className="w-full">
               Continue to Login
             </Button>
           </CardContent>
@@ -259,23 +259,25 @@ function ResetPasswordContent() {
 
 export default function ResetPasswordPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-background p-4">
-        <div className="absolute top-4 right-4">
-          <ThemeToggle />
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-background p-4">
+          <div className="absolute top-4 right-4">
+            <ThemeToggle />
+          </div>
+          <Card className="w-full max-w-md">
+            <CardContent className="pt-6">
+              <div className="flex flex-col items-center justify-center space-y-4">
+                <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Loading...
+                </p>
+              </div>
+            </CardContent>
+          </Card>
         </div>
-        <Card className="w-full max-w-md">
-          <CardContent className="pt-6">
-            <div className="flex flex-col items-center justify-center space-y-4">
-              <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Loading...
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    }>
+      }
+    >
       <ResetPasswordContent />
     </Suspense>
   );

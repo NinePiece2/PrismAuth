@@ -9,7 +9,7 @@ import { prisma } from "@/lib/db";
 export async function GET() {
   try {
     const tenantCount = await prisma.tenant.count();
-    
+
     return NextResponse.json({
       setupRequired: tenantCount === 0,
     });
@@ -17,7 +17,7 @@ export async function GET() {
     console.error("Error checking setup status:", error);
     return NextResponse.json(
       { error: "Failed to check setup status" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

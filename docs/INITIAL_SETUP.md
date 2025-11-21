@@ -19,6 +19,7 @@ PrismAuth now includes an automatic first-time setup flow that eliminates the ne
 ## Accessing the Setup
 
 The setup flow is automatically triggered when you:
+
 - Visit the home page (`/`)
 - Try to access the login page (`/login`)
 - Try to access the register page (`/register`)
@@ -28,10 +29,12 @@ If no tenants exist in the database, you'll be redirected to `/setup`.
 ## Setup Fields
 
 ### Tenant Information
+
 - **Tenant Name**: The name of your organization or application
 - **Tenant Domain**: A unique domain identifier (e.g., `example.com`)
 
 ### Admin Account
+
 - **Admin Name**: Optional display name
 - **Admin Email**: Email address for the admin account
 - **Admin Password**: Secure password (minimum 8 characters)
@@ -40,10 +43,13 @@ If no tenants exist in the database, you'll be redirected to `/setup`.
 ## API Endpoints
 
 ### Check Setup Status
+
 ```
 GET /api/setup/check
 ```
+
 Returns:
+
 ```json
 {
   "setupRequired": true | false
@@ -51,10 +57,13 @@ Returns:
 ```
 
 ### Complete Setup
+
 ```
 POST /api/setup
 ```
+
 Body:
+
 ```json
 {
   "tenantName": "My Company",

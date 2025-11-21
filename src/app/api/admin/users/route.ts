@@ -122,7 +122,9 @@ export async function POST(request: NextRequest) {
         name: validatedData.name || null,
         tenantId: currentUser.tenantId,
         role: validatedData.role,
-        ...(validatedData.customRoleId && { customRoleId: validatedData.customRoleId }),
+        ...(validatedData.customRoleId && {
+          customRoleId: validatedData.customRoleId,
+        }),
         isActive: true,
         requirePasswordChange: validatedData.requirePasswordChange ?? false,
         requireMfaSetup: validatedData.requireMfaSetup ?? false,
@@ -152,9 +154,9 @@ export async function POST(request: NextRequest) {
         validatedData.email,
         validatedData.password, // Send the plain password via email
         loginUrl,
-        validatedData.name
+        validatedData.name,
       );
-      
+
       await emailService.send({
         to: validatedData.email,
         from: config.email.from,

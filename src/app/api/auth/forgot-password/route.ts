@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
     if (!email || !tenantDomain) {
       return NextResponse.json(
         { error: "Email and tenant domain are required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -22,8 +22,10 @@ export async function POST(request: NextRequest) {
     if (!tenant) {
       // Don't reveal if tenant exists or not for security
       return NextResponse.json(
-        { message: "If an account exists, a password reset email has been sent" },
-        { status: 200 }
+        {
+          message: "If an account exists, a password reset email has been sent",
+        },
+        { status: 200 },
       );
     }
 
@@ -40,8 +42,10 @@ export async function POST(request: NextRequest) {
     if (!user) {
       // Don't reveal if user exists or not for security
       return NextResponse.json(
-        { message: "If an account exists, a password reset email has been sent" },
-        { status: 200 }
+        {
+          message: "If an account exists, a password reset email has been sent",
+        },
+        { status: 200 },
       );
     }
 
@@ -76,7 +80,10 @@ export async function POST(request: NextRequest) {
     const resetUrl = `${baseUrl}/reset-password?token=${resetToken}`;
 
     // Send email
-    const emailTemplate = emailTemplates.passwordReset(resetUrl, user.name || undefined);
+    const emailTemplate = emailTemplates.passwordReset(
+      resetUrl,
+      user.name || undefined,
+    );
     const result = await emailService.send({
       to: user.email,
       from: process.env.EMAIL_FROM || "noreply@prismauth.com",
@@ -89,19 +96,16 @@ export async function POST(request: NextRequest) {
       console.error("Failed to send password reset email:", result.error);
       return NextResponse.json(
         { error: "Failed to send password reset email" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
     return NextResponse.json(
       { message: "If an account exists, a password reset email has been sent" },
-      { status: 200 }
+      { status: 200 },
     );
   } catch (error) {
     console.error("Forgot password error:", error);
-    return NextResponse.json(
-      { error: "An error occurred" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "An error occurred" }, { status: 500 });
   }
 }

@@ -61,7 +61,7 @@ model User {
   // ... existing fields
   customRoleId String?
   customRole   CustomRole? @relation(fields: [customRoleId], references: [id], onDelete: SetNull)
-  
+
   @@index([customRoleId])
 }
 ```
@@ -104,6 +104,7 @@ Each role can have multiple permissions for each application. Permissions are st
 List all custom roles in the tenant.
 
 **Response:**
+
 ```json
 [
   {
@@ -126,6 +127,7 @@ List all custom roles in the tenant.
 Create a new custom role.
 
 **Request:**
+
 ```json
 {
   "name": "Developer",
@@ -134,6 +136,7 @@ Create a new custom role.
 ```
 
 **Response:**
+
 ```json
 {
   "id": "role-id",
@@ -155,6 +158,7 @@ Create a new custom role.
 Get a specific role with its permissions.
 
 **Response:**
+
 ```json
 {
   "id": "role-id",
@@ -184,6 +188,7 @@ Get a specific role with its permissions.
 Update a role.
 
 **Request:**
+
 ```json
 {
   "name": "Senior Developer",
@@ -197,6 +202,7 @@ Update a role.
 Delete a role (only if no users are assigned).
 
 **Response:**
+
 ```json
 {
   "success": true
@@ -210,6 +216,7 @@ Delete a role (only if no users are assigned).
 Set permissions for a role on an application.
 
 **Request:**
+
 ```json
 {
   "applicationId": "app-id",
@@ -218,6 +225,7 @@ Set permissions for a role on an application.
 ```
 
 **Response:**
+
 ```json
 {
   "id": "perm-id",
@@ -238,6 +246,7 @@ Set permissions for a role on an application.
 Get all permissions for a role.
 
 **Response:**
+
 ```json
 [
   {
@@ -258,6 +267,7 @@ Get all permissions for a role.
 Remove all permissions for a role on an application.
 
 **Response:**
+
 ```json
 {
   "success": true
@@ -271,6 +281,7 @@ Remove all permissions for a role on an application.
 Create user with optional custom role.
 
 **Request:**
+
 ```json
 {
   "email": "user@example.com",
@@ -287,6 +298,7 @@ Create user with optional custom role.
 Update user role or custom role.
 
 **Request:**
+
 ```json
 {
   "role": "admin",
@@ -295,6 +307,7 @@ Update user role or custom role.
 ```
 
 To remove a custom role:
+
 ```json
 {
   "customRoleId": null
@@ -313,6 +326,7 @@ The roles management page allows administrators to:
 4. **Navigate to role details** to manage permissions
 
 #### Features:
+
 - Active/inactive status badges
 - User count display
 - Permission count display
@@ -330,6 +344,7 @@ The role permissions detail page allows administrators to:
 5. **Remove permissions** for specific applications
 
 #### Add Permissions Dialog:
+
 - **Application selector** (only shows apps without permissions for this role)
 - **Common permissions checkboxes** (read, write, delete, admin, etc.)
 - **Custom permission input** for application-specific permissions
@@ -427,7 +442,7 @@ When an application needs to verify permissions, it can:
 
 ### User Assignment
 
-1. **System role vs Custom role**: 
+1. **System role vs Custom role**:
    - System role (user/admin) controls PrismAuth access
    - Custom role controls application-specific permissions
 2. **Don't over-assign**: Users should only have the minimum required access
@@ -519,17 +534,21 @@ Potential improvements for future versions:
 ## Troubleshooting
 
 ### Cannot delete role
+
 **Issue**: "Cannot delete role that is assigned to users"  
 **Solution**: Remove the role from all users first, then delete
 
 ### Permission not working
+
 **Issue**: User has role but permission check fails  
 **Solution**: Verify application ID matches between role permission and application
 
 ### Role name conflict
+
 **Issue**: "Role with this name already exists"  
 **Solution**: Choose a unique name within your tenant
 
 ### Custom role not showing
+
 **Issue**: Custom role doesn't appear in dropdowns  
 **Solution**: Ensure role is set to isActive = true

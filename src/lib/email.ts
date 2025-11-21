@@ -1,6 +1,6 @@
 /**
  * Email Abstraction Layer
- * 
+ *
  * This module provides a unified interface for sending emails across different providers.
  * Supported providers: Resend, Console (dev/testing), Custom adapters
  */
@@ -14,7 +14,9 @@ export interface EmailMessage {
 }
 
 export interface EmailProvider {
-  send(message: EmailMessage): Promise<{ success: boolean; messageId?: string; error?: string }>;
+  send(
+    message: EmailMessage,
+  ): Promise<{ success: boolean; messageId?: string; error?: string }>;
 }
 
 /**
@@ -22,7 +24,9 @@ export interface EmailProvider {
  * Logs emails to console instead of sending them
  */
 export class ConsoleEmailProvider implements EmailProvider {
-  async send(message: EmailMessage): Promise<{ success: boolean; messageId?: string }> {
+  async send(
+    message: EmailMessage,
+  ): Promise<{ success: boolean; messageId?: string }> {
     console.log("\n" + "=".repeat(80));
     console.log("📧 EMAIL (Console Provider - Dev Mode)");
     console.log("=".repeat(80));
@@ -38,7 +42,7 @@ export class ConsoleEmailProvider implements EmailProvider {
       console.log(message.text);
     }
     console.log("=".repeat(80) + "\n");
-    
+
     return { success: true, messageId: `console-${Date.now()}` };
   }
 }
@@ -55,12 +59,14 @@ export class ResendEmailProvider implements EmailProvider {
     this.apiKey = apiKey;
   }
 
-  async send(message: EmailMessage): Promise<{ success: boolean; messageId?: string; error?: string }> {
+  async send(
+    message: EmailMessage,
+  ): Promise<{ success: boolean; messageId?: string; error?: string }> {
     try {
       const response = await fetch(this.apiUrl, {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${this.apiKey}`,
+          Authorization: `Bearer ${this.apiKey}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
@@ -106,14 +112,24 @@ export class CustomEmailProvider implements EmailProvider {
     password: string;
   };
 
-  constructor(config: { host: string; port: number; username: string; password: string }) {
+  constructor(config: {
+    host: string;
+    port: number;
+    username: string;
+    password: string;
+  }) {
     this.config = config;
   }
 
-  async send(message: EmailMessage): Promise<{ success: boolean; messageId?: string; error?: string }> {
+  async send(
+    message: EmailMessage,
+  ): Promise<{ success: boolean; messageId?: string; error?: string }> {
     // Implement your custom email sending logic here
     // This could use nodemailer, AWS SES, SendGrid, etc.
-    console.warn("CustomEmailProvider.send() not implemented. Message:", message);
+    console.warn(
+      "CustomEmailProvider.send() not implemented. Message:",
+      message,
+    );
     return {
       success: false,
       error: "Custom email provider not implemented",
@@ -135,34 +151,38 @@ class EmailService {
 
   private initializeProvider(): EmailProvider {
     const emailProvider = process.env.EMAIL_PROVIDER || "console";
-    
+
     switch (emailProvider.toLowerCase()) {
       case "resend":
         const resendApiKey = process.env.RESEND_API_KEY;
         if (!resendApiKey) {
-          console.warn("RESEND_API_KEY not found, falling back to console provider");
+          console.warn(
+            "RESEND_API_KEY not found, falling back to console provider",
+          );
           return new ConsoleEmailProvider();
         }
         return new ResendEmailProvider(resendApiKey);
-      
+
       case "custom":
         const smtpHost = process.env.SMTP_HOST;
         const smtpPort = process.env.SMTP_PORT;
         const smtpUsername = process.env.SMTP_USERNAME;
         const smtpPassword = process.env.SMTP_PASSWORD;
-        
+
         if (!smtpHost || !smtpPort || !smtpUsername || !smtpPassword) {
-          console.warn("SMTP configuration incomplete, falling back to console provider");
+          console.warn(
+            "SMTP configuration incomplete, falling back to console provider",
+          );
           return new ConsoleEmailProvider();
         }
-        
+
         return new CustomEmailProvider({
           host: smtpHost,
           port: parseInt(smtpPort, 10),
           username: smtpUsername,
           password: smtpPassword,
         });
-      
+
       case "console":
       default:
         return new ConsoleEmailProvider();
@@ -172,7 +192,9 @@ class EmailService {
   /**
    * Send an email using the configured provider
    */
-  async send(message: EmailMessage): Promise<{ success: boolean; messageId?: string; error?: string }> {
+  async send(
+    message: EmailMessage,
+  ): Promise<{ success: boolean; messageId?: string; error?: string }> {
     return this.provider.send(message);
   }
 
@@ -198,7 +220,12 @@ export const emailService = new EmailService();
  * Email Templates
  */
 export const emailTemplates = {
-  accountCreated: (email: string, password: string, loginUrl: string, userName?: string) => ({
+  accountCreated: (
+    email: string,
+    password: string,
+    loginUrl: string,
+    userName?: string,
+  ) => ({
     subject: "Welcome to PrismAuth - Account Created",
     html: `
       <!DOCTYPE html>

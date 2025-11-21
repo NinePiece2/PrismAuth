@@ -26,7 +26,7 @@ export async function POST() {
     if (dbUser?.mfaEnabled) {
       return NextResponse.json(
         { error: "MFA is already enabled" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -43,7 +43,7 @@ export async function POST() {
 
     // Generate backup codes
     const backupCodes = Array.from({ length: 10 }, () =>
-      randomBytes(4).toString("hex").toUpperCase()
+      randomBytes(4).toString("hex").toUpperCase(),
     );
 
     // Store the secret (but don't enable MFA yet - user needs to verify first)
@@ -68,7 +68,7 @@ export async function POST() {
     console.error("MFA setup error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -90,7 +90,7 @@ export async function PATCH(request: NextRequest) {
     if (!code) {
       return NextResponse.json(
         { error: "Verification code is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -103,7 +103,7 @@ export async function PATCH(request: NextRequest) {
     if (!dbUser?.mfaSecret) {
       return NextResponse.json(
         { error: "MFA setup not initiated" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -122,14 +122,14 @@ export async function PATCH(request: NextRequest) {
     if (!isValid) {
       return NextResponse.json(
         { error: "Invalid verification code" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     // Enable MFA and clear requireMfaSetup flag
     const updatedUser = await prisma.user.update({
       where: { id: user.userId },
-      data: { 
+      data: {
         mfaEnabled: true,
         requireMfaSetup: false,
       },
@@ -138,8 +138,10 @@ export async function PATCH(request: NextRequest) {
     // Send MFA enabled confirmation email
     try {
       const { config } = await import("@/lib/config");
-      const emailTemplate = emailTemplates.mfaEnabled(updatedUser.name || undefined);
-      
+      const emailTemplate = emailTemplates.mfaEnabled(
+        updatedUser.name || undefined,
+      );
+
       await emailService.send({
         to: updatedUser.email,
         from: config.email.from,
@@ -152,7 +154,7 @@ export async function PATCH(request: NextRequest) {
       // Don't fail MFA enablement if email fails
     }
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       success: true,
       user: {
         id: updatedUser.id,
@@ -165,7 +167,7 @@ export async function PATCH(request: NextRequest) {
     console.error("MFA verification error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -187,7 +189,7 @@ export async function DELETE(request: NextRequest) {
     if (!code) {
       return NextResponse.json(
         { error: "Verification code is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -200,7 +202,7 @@ export async function DELETE(request: NextRequest) {
     if (!dbUser?.mfaEnabled) {
       return NextResponse.json(
         { error: "MFA is not enabled" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -215,7 +217,7 @@ export async function DELETE(request: NextRequest) {
         where: { id: user.userId },
         data: {
           mfaBackupCodes: dbUser.mfaBackupCodes.filter(
-            (bc) => bc !== code.toUpperCase()
+            (bc) => bc !== code.toUpperCase(),
           ),
         },
       });
@@ -236,7 +238,7 @@ export async function DELETE(request: NextRequest) {
     if (!isValid) {
       return NextResponse.json(
         { error: "Invalid verification code" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -255,7 +257,7 @@ export async function DELETE(request: NextRequest) {
     console.error("MFA disable error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

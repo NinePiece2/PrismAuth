@@ -9,6 +9,7 @@ This guide covers the new user interface built with Shadcn UI for managing users
 ### 1. User Authentication
 
 #### Registration Page (`/register`)
+
 - Allows new users to create an account
 - Fields:
   - Tenant Domain (required)
@@ -18,6 +19,7 @@ This guide covers the new user interface built with Shadcn UI for managing users
 - After registration, users are automatically logged in and redirected to the dashboard
 
 #### Login Page (`/login`)
+
 - Secure login for existing users
 - Fields:
   - Tenant Domain (required)
@@ -31,20 +33,18 @@ This guide covers the new user interface built with Shadcn UI for managing users
 Only accessible by users with the `admin` role.
 
 #### Features:
+
 - **View Users Table**: Displays all users in the tenant with:
   - Name
   - Email
   - Role
   - Status (Active/Inactive)
   - Created date
-  
 - **Add New Users**: Click "Add User" button to create new users manually
   - Set name, email, password, and role (user or admin)
-  
 - **Change User Roles**: Select a different role directly from the table dropdown
   - Options: `user` or `admin`
   - Admins cannot change their own role
-  
 - **Delete Users**: Remove users from the system
   - Admins cannot delete themselves
 
@@ -53,6 +53,7 @@ Only accessible by users with the `admin` role.
 Only accessible by users with the `admin` role.
 
 #### Features:
+
 - **View Applications**: Displays all registered OAuth2 applications with:
   - Application name and description
   - Client ID (copyable)
@@ -68,23 +69,24 @@ Only accessible by users with the `admin` role.
     - Grant Types (e.g., `authorization_code, refresh_token`)
   - Optional fields:
     - Description
-  
 - **View Client Credentials**: After creating an application, you'll see:
   - Client ID (save this)
   - Client Secret (⚠️ shown only once - copy and save it securely!)
-  
 - **Delete Applications**: Remove OAuth2 applications when no longer needed
 
 ### 4. Dashboard (`/`)
 
 #### For Unauthenticated Users:
+
 - Welcome page with options to Sign In or Register
 
 #### For Authenticated Regular Users:
+
 - Shows user information (email, role)
 - Access to logout functionality
 
 #### For Admin Users:
+
 - Shows user information
 - Quick access to:
   - Manage Users
@@ -94,7 +96,9 @@ Only accessible by users with the `admin` role.
 ## Navigation
 
 ### Main Navigation Bar
+
 Present on authenticated pages:
+
 - **PrismAuth**: Brand/home link
 - **Users**: Access user management (admin only)
 - **Applications**: Access OAuth2 application management (admin only)
@@ -106,6 +110,7 @@ Present on authenticated pages:
 ### 1. Set Up Your Environment
 
 Make sure you have the required environment variables configured:
+
 ```env
 DATABASE_URL=your_postgres_connection_string
 SESSION_SECRET=your_session_secret
@@ -202,18 +207,22 @@ UPDATE "User" SET role = 'admin' WHERE email = 'your-email@example.com';
 ## Troubleshooting
 
 ### "Tenant not found" error during registration
+
 - Ensure the tenant domain exists in the database
 - Check that the domain matches exactly (case-sensitive)
 
 ### "Unauthorized" when accessing admin pages
+
 - Verify your user account has the `admin` role
 - Try logging out and logging back in
 
 ### Can't see the client secret
+
 - Client secrets are only shown once during application creation
 - If you lost it, you'll need to delete and recreate the application
 
 ### Application redirects aren't working
+
 - Ensure the redirect URI in your app matches exactly what's registered
 - Check for trailing slashes and protocol (http vs https)
 
@@ -230,6 +239,7 @@ See `docs/CLIENT_INTEGRATION.md` for detailed integration instructions.
 ## UI Components
 
 Built with Shadcn UI components:
+
 - Forms with validation
 - Data tables with sorting
 - Modal dialogs for creation

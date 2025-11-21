@@ -5,21 +5,25 @@ PrismAuth includes a flexible email notification system that sends important sec
 ## Email Events
 
 ### 1. Account Created by Admin
+
 **Trigger**: When an administrator creates a new user account  
 **Content**: Welcome message with login credentials and link to application  
 **Purpose**: Provide new users with their initial login information
 
 ### 2. Two-Factor Authentication Enabled
+
 **Trigger**: When a user successfully enables MFA  
 **Content**: Confirmation that 2FA is now active with security tips  
 **Purpose**: Notify users of increased account security
 
 ### 3. Password Changed
+
 **Trigger**: When a user changes their password (from settings or forced change)  
 **Content**: Confirmation of password change with security warning  
 **Purpose**: Alert users to password changes for security monitoring
 
 ### 4. Password Reset Request
+
 **Trigger**: When a user requests a password reset  
 **Content**: Password reset link (expires in 1 hour)  
 **Purpose**: Allow users to securely reset forgotten passwords
@@ -29,6 +33,7 @@ PrismAuth includes a flexible email notification system that sends important sec
 PrismAuth supports multiple email providers:
 
 ### Console Provider (Default - Development)
+
 Logs emails to console instead of sending them. Perfect for development and testing.
 
 ```env
@@ -36,6 +41,7 @@ EMAIL_PROVIDER=console
 ```
 
 ### Resend Provider
+
 Uses the Resend API for production email delivery.
 
 ```env
@@ -45,6 +51,7 @@ EMAIL_FROM=noreply@yourdomain.com
 ```
 
 ### Custom Provider
+
 Implement your own email provider (SMTP, AWS SES, SendGrid, etc.)
 
 ```env
@@ -60,15 +67,15 @@ EMAIL_FROM=noreply@yourdomain.com
 
 ### Environment Variables
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `EMAIL_PROVIDER` | Email provider to use (`console`, `resend`, `custom`) | `console` |
-| `EMAIL_FROM` | Sender email address | `noreply@prismauth.local` |
-| `RESEND_API_KEY` | Resend API key (if using Resend) | - |
-| `SMTP_HOST` | SMTP server host (if using custom) | - |
-| `SMTP_PORT` | SMTP server port (if using custom) | - |
-| `SMTP_USERNAME` | SMTP username (if using custom) | - |
-| `SMTP_PASSWORD` | SMTP password (if using custom) | - |
+| Variable         | Description                                           | Default                   |
+| ---------------- | ----------------------------------------------------- | ------------------------- |
+| `EMAIL_PROVIDER` | Email provider to use (`console`, `resend`, `custom`) | `console`                 |
+| `EMAIL_FROM`     | Sender email address                                  | `noreply@prismauth.local` |
+| `RESEND_API_KEY` | Resend API key (if using Resend)                      | -                         |
+| `SMTP_HOST`      | SMTP server host (if using custom)                    | -                         |
+| `SMTP_PORT`      | SMTP server port (if using custom)                    | -                         |
+| `SMTP_USERNAME`  | SMTP username (if using custom)                       | -                         |
+| `SMTP_PASSWORD`  | SMTP password (if using custom)                       | -                         |
 
 ### Example .env Configuration
 
@@ -85,6 +92,7 @@ BASE_URL=https://auth.yourdomain.com
 ## Email Templates
 
 All email templates are styled with:
+
 - Responsive HTML design
 - Dark mode compatible colors
 - Professional branding with gradient headers
@@ -112,7 +120,7 @@ const template = emailTemplates.accountCreated(
   email,
   password,
   loginUrl,
-  userName
+  userName,
 );
 
 await emailService.send({
@@ -127,6 +135,7 @@ await emailService.send({
 ### Error Handling
 
 Email failures are logged but don't block critical operations:
+
 - User creation proceeds even if welcome email fails
 - Password changes succeed even if notification fails
 - MFA enablement continues even if confirmation fails
@@ -181,17 +190,20 @@ Before going live:
 ## Troubleshooting
 
 ### Emails not appearing in console
+
 - Check that `EMAIL_PROVIDER=console` is set
 - Ensure terminal/logs are visible
 - Check log level settings
 
 ### Emails not being sent with Resend
+
 - Verify `RESEND_API_KEY` is correct
 - Check domain verification in Resend dashboard
 - Review Resend API logs for errors
 - Ensure sender email domain is verified
 
 ### Emails going to spam
+
 - Configure SPF, DKIM, and DMARC records
 - Use verified sending domain
 - Avoid spam trigger words

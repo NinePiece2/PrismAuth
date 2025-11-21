@@ -10,20 +10,21 @@ import { hashPassword } from "@/lib/crypto";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { tenantName, tenantDomain, adminName, adminEmail, adminPassword } = body;
+    const { tenantName, tenantDomain, adminName, adminEmail, adminPassword } =
+      body;
 
     // Validate inputs
     if (!tenantName || !tenantDomain || !adminEmail || !adminPassword) {
       return NextResponse.json(
         { error: "All fields are required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     if (adminPassword.length < 8) {
       return NextResponse.json(
         { error: "Password must be at least 8 characters" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -32,7 +33,7 @@ export async function POST(request: NextRequest) {
     if (tenantCount > 0) {
       return NextResponse.json(
         { error: "Setup has already been completed" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -41,7 +42,7 @@ export async function POST(request: NextRequest) {
     if (!domainRegex.test(tenantDomain)) {
       return NextResponse.json(
         { error: "Invalid domain format" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -50,7 +51,7 @@ export async function POST(request: NextRequest) {
     if (!emailRegex.test(adminEmail)) {
       return NextResponse.json(
         { error: "Invalid email format" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -101,26 +102,31 @@ export async function POST(request: NextRequest) {
     console.error("Error during initial setup:", error);
 
     // Handle unique constraint violations
-    if (error && typeof error === "object" && "code" in error && error.code === "P2002") {
+    if (
+      error &&
+      typeof error === "object" &&
+      "code" in error &&
+      error.code === "P2002"
+    ) {
       const prismaError = error as { meta?: { target?: string[] } };
       const field = prismaError.meta?.target?.[0];
       if (field === "domain") {
         return NextResponse.json(
           { error: "A tenant with this domain already exists" },
-          { status: 400 }
+          { status: 400 },
         );
       }
       if (field === "email") {
         return NextResponse.json(
           { error: "A user with this email already exists" },
-          { status: 400 }
+          { status: 400 },
         );
       }
     }
 
     return NextResponse.json(
       { error: "Failed to complete setup. Please try again." },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

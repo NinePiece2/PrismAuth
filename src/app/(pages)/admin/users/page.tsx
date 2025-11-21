@@ -70,7 +70,12 @@ export default function AdminUsersPage() {
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
   const [userToEdit, setUserToEdit] = useState<User | null>(null);
   const [editName, setEditName] = useState("");
-  const [currentUser, setCurrentUser] = useState<{ id: string; email: string; role: string; name: string | null } | null>(null);
+  const [currentUser, setCurrentUser] = useState<{
+    id: string;
+    email: string;
+    role: string;
+    name: string | null;
+  } | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [formData, setFormData] = useState({
     email: "",
@@ -156,7 +161,15 @@ export default function AdminUsersPage() {
 
       toast.success("User created successfully");
       setIsCreateDialogOpen(false);
-      setFormData({ email: "", password: "", name: "", role: "user", customRoleId: "", requirePasswordChange: false, requireMfaSetup: false });
+      setFormData({
+        email: "",
+        password: "",
+        name: "",
+        role: "user",
+        customRoleId: "",
+        requirePasswordChange: false,
+        requireMfaSetup: false,
+      });
       fetchUsers();
     } catch (error) {
       toast.error("An error occurred while creating user");
@@ -225,7 +238,10 @@ export default function AdminUsersPage() {
     }
   };
 
-  const handleUpdateCustomRole = async (userId: string, customRoleId: string | null) => {
+  const handleUpdateCustomRole = async (
+    userId: string,
+    customRoleId: string | null,
+  ) => {
     try {
       const response = await fetch(`/api/admin/users/${userId}`, {
         method: "PATCH",
@@ -310,7 +326,7 @@ export default function AdminUsersPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <motion.nav 
+      <motion.nav
         className="bg-card border-b border-border"
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -321,10 +337,7 @@ export default function AdminUsersPage() {
             <div className="flex items-center space-x-8">
               <h1 className="text-xl font-bold">PrismAuth Admin</h1>
               <div className="flex space-x-4">
-                <Button
-                  variant="ghost"
-                  onClick={() => router.push("/")}
-                >
+                <Button variant="ghost" onClick={() => router.push("/")}>
                   Home
                 </Button>
                 <Button
@@ -366,7 +379,7 @@ export default function AdminUsersPage() {
         </div>
       </motion.nav>
 
-      <motion.div 
+      <motion.div
         className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -430,7 +443,10 @@ export default function AdminUsersPage() {
                           placeholder="••••••••"
                           value={formData.password}
                           onChange={(e) =>
-                            setFormData({ ...formData, password: e.target.value })
+                            setFormData({
+                              ...formData,
+                              password: e.target.value,
+                            })
                           }
                           required
                         />
@@ -438,20 +454,33 @@ export default function AdminUsersPage() {
                           type="button"
                           variant="outline"
                           onClick={() => {
-                            const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@$!%*?&";
+                            const chars =
+                              "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@$!%*?&";
                             const length = 16;
                             let password = "";
                             // Ensure at least one of each required character type
-                            password += "ABCDEFGHIJKLMNOPQRSTUVWXYZ"[Math.floor(Math.random() * 26)];
-                            password += "abcdefghijklmnopqrstuvwxyz"[Math.floor(Math.random() * 26)];
-                            password += "0123456789"[Math.floor(Math.random() * 10)];
-                            password += "@$!%*?&"[Math.floor(Math.random() * 7)];
+                            password += "ABCDEFGHIJKLMNOPQRSTUVWXYZ"[
+                              Math.floor(Math.random() * 26)
+                            ];
+                            password += "abcdefghijklmnopqrstuvwxyz"[
+                              Math.floor(Math.random() * 26)
+                            ];
+                            password += "0123456789"[
+                              Math.floor(Math.random() * 10)
+                            ];
+                            password += "@$!%*?&"[
+                              Math.floor(Math.random() * 7)
+                            ];
                             // Fill the rest randomly
                             for (let i = password.length; i < length; i++) {
-                              password += chars[Math.floor(Math.random() * chars.length)];
+                              password +=
+                                chars[Math.floor(Math.random() * chars.length)];
                             }
                             // Shuffle the password
-                            password = password.split("").sort(() => Math.random() - 0.5).join("");
+                            password = password
+                              .split("")
+                              .sort(() => Math.random() - 0.5)
+                              .join("");
                             setFormData({ ...formData, password });
                             toast.success("Password generated");
                           }}
@@ -482,7 +511,10 @@ export default function AdminUsersPage() {
                       <Select
                         value={formData.customRoleId || "__none__"}
                         onValueChange={(value) =>
-                          setFormData({ ...formData, customRoleId: value === "__none__" ? "" : value })
+                          setFormData({
+                            ...formData,
+                            customRoleId: value === "__none__" ? "" : value,
+                          })
                         }
                       >
                         <SelectTrigger>
@@ -503,7 +535,10 @@ export default function AdminUsersPage() {
                         id="requirePasswordChange"
                         checked={formData.requirePasswordChange}
                         onCheckedChange={(checked) =>
-                          setFormData({ ...formData, requirePasswordChange: checked === true })
+                          setFormData({
+                            ...formData,
+                            requirePasswordChange: checked === true,
+                          })
                         }
                       />
                       <Label
@@ -518,7 +553,10 @@ export default function AdminUsersPage() {
                         id="requireMfaSetup"
                         checked={formData.requireMfaSetup}
                         onCheckedChange={(checked) =>
-                          setFormData({ ...formData, requireMfaSetup: checked === true })
+                          setFormData({
+                            ...formData,
+                            requireMfaSetup: checked === true,
+                          })
                         }
                       />
                       <Label
@@ -543,7 +581,10 @@ export default function AdminUsersPage() {
               </Dialog>
 
               {/* Edit User Name Dialog */}
-              <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+              <Dialog
+                open={isEditDialogOpen}
+                onOpenChange={setIsEditDialogOpen}
+              >
                 <DialogContent>
                   <DialogHeader>
                     <DialogTitle>Edit User Name</DialogTitle>
@@ -585,40 +626,72 @@ export default function AdminUsersPage() {
               </Dialog>
 
               {/* Delete Confirmation Dialog */}
-              <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+              <Dialog
+                open={isDeleteDialogOpen}
+                onOpenChange={setIsDeleteDialogOpen}
+              >
                 <DialogContent>
                   <DialogHeader>
                     <DialogTitle className="flex items-center gap-2 text-destructive">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-6 w-6"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                        />
                       </svg>
                       Delete User
                     </DialogTitle>
                     <DialogDescription asChild>
                       <div className="pt-4 space-y-3">
                         <div className="text-base">
-                          Are you sure you want to delete this user? This action cannot be undone.
+                          Are you sure you want to delete this user? This action
+                          cannot be undone.
                         </div>
                         {userToDelete && (
                           <div className="bg-muted p-4 rounded-lg space-y-2">
                             <div className="flex justify-between">
-                              <span className="text-sm font-medium text-muted-foreground">Name:</span>
-                              <span className="text-sm font-semibold">{userToDelete.name || "—"}</span>
+                              <span className="text-sm font-medium text-muted-foreground">
+                                Name:
+                              </span>
+                              <span className="text-sm font-semibold">
+                                {userToDelete.name || "—"}
+                              </span>
                             </div>
                             <div className="flex justify-between">
-                              <span className="text-sm font-medium text-muted-foreground">Email:</span>
-                              <span className="text-sm font-semibold">{userToDelete.email}</span>
+                              <span className="text-sm font-medium text-muted-foreground">
+                                Email:
+                              </span>
+                              <span className="text-sm font-semibold">
+                                {userToDelete.email}
+                              </span>
                             </div>
                             <div className="flex justify-between">
-                              <span className="text-sm font-medium text-muted-foreground">Role:</span>
-                              <Badge variant={userToDelete.role === "admin" ? "default" : "secondary"}>
+                              <span className="text-sm font-medium text-muted-foreground">
+                                Role:
+                              </span>
+                              <Badge
+                                variant={
+                                  userToDelete.role === "admin"
+                                    ? "default"
+                                    : "secondary"
+                                }
+                              >
                                 {userToDelete.role}
                               </Badge>
                             </div>
                           </div>
                         )}
                         <div className="text-sm text-destructive font-medium">
-                          ⚠️ All user data, sessions, and permissions will be permanently deleted.
+                          ⚠️ All user data, sessions, and permissions will be
+                          permanently deleted.
                         </div>
                       </div>
                     </DialogDescription>
@@ -670,84 +743,90 @@ export default function AdminUsersPage() {
               <TableBody>
                 {filteredUsers.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8 text-gray-500">
+                    <TableCell
+                      colSpan={7}
+                      className="text-center py-8 text-gray-500"
+                    >
                       No users found matching your search.
                     </TableCell>
                   </TableRow>
                 ) : (
                   filteredUsers.map((user) => (
-                  <TableRow key={user.id}>
-                    <TableCell className="font-medium">
-                      {user.name || "—"}
-                    </TableCell>
-                    <TableCell>{user.email}</TableCell>
-                    <TableCell>
-                      <Select
-                        value={user.role}
-                        onValueChange={(value) =>
-                          handleUpdateRole(user.id, value)
-                        }
-                        disabled={user.id === currentUser?.id}
-                      >
-                        <SelectTrigger className="w-[120px]">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="user">User</SelectItem>
-                          <SelectItem value="admin">Admin</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </TableCell>
-                    <TableCell>
-                      <Select
-                        value={user.customRoleId || "__none__"}
-                        onValueChange={(value) =>
-                          handleUpdateCustomRole(user.id, value === "__none__" ? null : value)
-                        }
-                      >
-                        <SelectTrigger className="w-[180px]">
-                          <SelectValue placeholder="No custom role" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="__none__">None</SelectItem>
-                          {customRoles.map((role) => (
-                            <SelectItem key={role.id} value={role.id}>
-                              {role.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={user.isActive ? "default" : "secondary"}
-                      >
-                        {user.isActive ? "Active" : "Inactive"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      {new Date(user.createdAt).toLocaleDateString()}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => openEditDialog(user)}
-                        >
-                          Edit
-                        </Button>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => openDeleteDialog(user)}
+                    <TableRow key={user.id}>
+                      <TableCell className="font-medium">
+                        {user.name || "—"}
+                      </TableCell>
+                      <TableCell>{user.email}</TableCell>
+                      <TableCell>
+                        <Select
+                          value={user.role}
+                          onValueChange={(value) =>
+                            handleUpdateRole(user.id, value)
+                          }
                           disabled={user.id === currentUser?.id}
                         >
-                          Delete
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
+                          <SelectTrigger className="w-[120px]">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="user">User</SelectItem>
+                            <SelectItem value="admin">Admin</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </TableCell>
+                      <TableCell>
+                        <Select
+                          value={user.customRoleId || "__none__"}
+                          onValueChange={(value) =>
+                            handleUpdateCustomRole(
+                              user.id,
+                              value === "__none__" ? null : value,
+                            )
+                          }
+                        >
+                          <SelectTrigger className="w-[180px]">
+                            <SelectValue placeholder="No custom role" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="__none__">None</SelectItem>
+                            {customRoles.map((role) => (
+                              <SelectItem key={role.id} value={role.id}>
+                                {role.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={user.isActive ? "default" : "secondary"}
+                        >
+                          {user.isActive ? "Active" : "Inactive"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        {new Date(user.createdAt).toLocaleDateString()}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => openEditDialog(user)}
+                          >
+                            Edit
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => openDeleteDialog(user)}
+                            disabled={user.id === currentUser?.id}
+                          >
+                            Delete
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
                   ))
                 )}
               </TableBody>

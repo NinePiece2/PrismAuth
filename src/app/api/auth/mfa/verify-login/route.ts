@@ -35,29 +35,26 @@ export async function POST(request: NextRequest) {
     });
 
     if (!user) {
-      return NextResponse.json(
-        { error: "Invalid request" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Invalid request" }, { status: 400 });
     }
 
     if (!user.isActive) {
       return NextResponse.json(
         { error: "Account is not active" },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
     if (!user.mfaEnabled || !user.mfaSecret) {
       return NextResponse.json(
         { error: "MFA is not enabled for this account" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     // Check if it's a backup code
     const isBackupCode = user.mfaBackupCodes.includes(
-      validatedData.code.toUpperCase()
+      validatedData.code.toUpperCase(),
     );
     let isValid = false;
 
@@ -68,7 +65,7 @@ export async function POST(request: NextRequest) {
         where: { id: user.id },
         data: {
           mfaBackupCodes: user.mfaBackupCodes.filter(
-            (bc) => bc !== validatedData.code.toUpperCase()
+            (bc) => bc !== validatedData.code.toUpperCase(),
           ),
         },
       });
@@ -83,13 +80,14 @@ export async function POST(request: NextRequest) {
         secret: OTPAuth.Secret.fromBase32(user.mfaSecret),
       });
 
-      isValid = totp.validate({ token: validatedData.code, window: 1 }) !== null;
+      isValid =
+        totp.validate({ token: validatedData.code, window: 1 }) !== null;
     }
 
     if (!isValid) {
       return NextResponse.json(
         { error: "Invalid verification code" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -116,14 +114,14 @@ export async function POST(request: NextRequest) {
     if (error instanceof ZodError) {
       return NextResponse.json(
         { error: "Validation error", details: error.issues },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     console.error("MFA verification error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

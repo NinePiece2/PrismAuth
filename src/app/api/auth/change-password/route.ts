@@ -5,7 +5,8 @@ import { createSession } from "@/lib/session";
 import { z } from "zod";
 import { emailService, emailTemplates } from "@/lib/email";
 
-const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/;
+const passwordRegex =
+  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/;
 
 const changePasswordSchema = z.object({
   userId: z.string(),
@@ -15,7 +16,7 @@ const changePasswordSchema = z.object({
     .min(8, "Password must be at least 8 characters")
     .regex(
       passwordRegex,
-      "Password must contain at least one uppercase letter, one lowercase letter, one number, and one symbol (@$!%*?&)"
+      "Password must contain at least one uppercase letter, one lowercase letter, one number, and one symbol (@$!%*?&)",
     ),
 });
 
@@ -34,10 +35,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (!user) {
-      return NextResponse.json(
-        { error: "User not found" },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     // Verify current password
@@ -81,8 +79,10 @@ export async function POST(request: NextRequest) {
     // Send password changed notification email
     try {
       const { config } = await import("@/lib/config");
-      const emailTemplate = emailTemplates.passwordChanged(user.name || undefined);
-      
+      const emailTemplate = emailTemplates.passwordChanged(
+        user.name || undefined,
+      );
+
       await emailService.send({
         to: user.email,
         from: config.email.from,

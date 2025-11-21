@@ -1,9 +1,9 @@
 /**
  * Create First Admin User Script
- * 
+ *
  * This script creates a tenant and the first admin user for PrismAuth.
  * Run this after setting up the database.
- * 
+ *
  * Usage: bun run scripts/create-admin.ts
  */
 
@@ -73,7 +73,9 @@ async function main() {
     });
 
     if (tenant) {
-      console.log(`ℹ️  Tenant "${tenantName}" already exists. Using existing tenant.`);
+      console.log(
+        `ℹ️  Tenant "${tenantName}" already exists. Using existing tenant.`,
+      );
     } else {
       // Create tenant
       tenant = await prisma.tenant.create({
@@ -97,7 +99,9 @@ async function main() {
     });
 
     if (existingUser) {
-      console.error(`❌ Error: User with email ${adminEmail} already exists in this tenant!`);
+      console.error(
+        `❌ Error: User with email ${adminEmail} already exists in this tenant!`,
+      );
       process.exit(1);
     }
 

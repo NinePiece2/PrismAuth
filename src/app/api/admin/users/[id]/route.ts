@@ -15,7 +15,7 @@ const updateUserSchema = z.object({
  */
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const currentUser = await getCurrentUser();
@@ -63,7 +63,9 @@ export async function PATCH(
       where: { id },
       data: {
         ...(validatedData.role && { role: validatedData.role }),
-        ...(validatedData.customRoleId !== undefined && { customRoleId: validatedData.customRoleId }),
+        ...(validatedData.customRoleId !== undefined && {
+          customRoleId: validatedData.customRoleId,
+        }),
         ...(validatedData.name !== undefined && { name: validatedData.name }),
       },
       select: {
@@ -107,7 +109,7 @@ export async function PATCH(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const currentUser = await getCurrentUser();

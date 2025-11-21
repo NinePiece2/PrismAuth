@@ -67,6 +67,7 @@ EMAIL_FROM=noreply@yourdomain.com
 ```
 
 **Setup**:
+
 1. Sign up at [resend.com](https://resend.com)
 2. Verify your sending domain
 3. Get your API key from the dashboard
@@ -140,6 +141,7 @@ model PasswordResetToken {
 Request a password reset email.
 
 **Request Body**:
+
 ```json
 {
   "email": "user@example.com",
@@ -148,6 +150,7 @@ Request a password reset email.
 ```
 
 **Response**:
+
 ```json
 {
   "message": "If an account exists, a password reset email has been sent"
@@ -155,6 +158,7 @@ Request a password reset email.
 ```
 
 **Security Notes**:
+
 - Always returns same message regardless of whether user exists
 - Invalidates previous unused tokens
 - Rate limiting recommended in production
@@ -164,9 +168,11 @@ Request a password reset email.
 Verify a reset token.
 
 **Query Parameters**:
+
 - `token`: The reset token from email
 
 **Response (Valid)**:
+
 ```json
 {
   "valid": true,
@@ -178,6 +184,7 @@ Verify a reset token.
 ```
 
 **Response (Invalid)**:
+
 ```json
 {
   "valid": false,
@@ -190,6 +197,7 @@ Verify a reset token.
 Reset the password using a valid token.
 
 **Request Body**:
+
 ```json
 {
   "token": "abc123...",
@@ -198,6 +206,7 @@ Reset the password using a valid token.
 ```
 
 **Response**:
+
 ```json
 {
   "message": "Password reset successfully"
@@ -205,6 +214,7 @@ Reset the password using a valid token.
 ```
 
 **Validation**:
+
 - Password must be at least 8 characters
 - Token must be valid, unused, and not expired
 - Updates password and marks token as used in a transaction
@@ -216,6 +226,7 @@ Reset the password using a valid token.
 Location: `src/lib/email.ts`
 
 The template includes:
+
 - Professional branding with gradient header
 - Clear call-to-action button
 - Plain text fallback
@@ -229,7 +240,7 @@ import { emailTemplates } from "@/lib/email";
 
 const template = emailTemplates.passwordReset(
   resetUrl,
-  userName // optional
+  userName, // optional
 );
 ```
 
@@ -242,7 +253,7 @@ export const emailTemplates = {
   passwordReset: (resetUrl: string, userName?: string) => ({
     // existing template
   }),
-  
+
   // Add your custom template
   welcomeEmail: (userName: string, loginUrl: string) => ({
     subject: "Welcome to PrismAuth",
@@ -274,7 +285,7 @@ export class MyCustomProvider implements EmailProvider {
     try {
       // Your email sending logic here
       // Use your provider's SDK or API
-      
+
       return {
         success: true,
         messageId: "msg_123",
@@ -524,11 +535,11 @@ interface EmailProvider {
 
 ```typescript
 interface EmailMessage {
-  to: string;       // Recipient email
-  from: string;     // Sender email (must be verified)
-  subject: string;  // Email subject line
-  html: string;     // HTML email body
-  text?: string;    // Plain text fallback (optional)
+  to: string; // Recipient email
+  from: string; // Sender email (must be verified)
+  subject: string; // Email subject line
+  html: string; // HTML email body
+  text?: string; // Plain text fallback (optional)
 }
 ```
 
@@ -548,6 +559,7 @@ const provider = emailService.getProvider();
 ## Support
 
 For issues or questions:
+
 - Check console logs for detailed error messages
 - Verify environment variables are set correctly
 - Test with console provider first

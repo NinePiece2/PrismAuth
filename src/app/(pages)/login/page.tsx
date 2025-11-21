@@ -5,7 +5,13 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { toast } from "sonner";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { motion } from "framer-motion";
@@ -55,7 +61,7 @@ export default function LoginPage() {
 
   const handleEmailChange = (email: string) => {
     setFormData({ ...formData, email });
-    
+
     // Extract and display domain
     const emailParts = email.split("@");
     if (emailParts.length === 2 && emailParts[1]) {
@@ -107,7 +113,9 @@ export default function LoginPage() {
 
       // Check if MFA setup is required
       if (data.requireMfaSetup) {
-        toast.info("Your administrator requires you to set up two-factor authentication");
+        toast.info(
+          "Your administrator requires you to set up two-factor authentication",
+        );
         router.push("/settings");
         return;
       }
@@ -121,7 +129,7 @@ export default function LoginPage() {
 
       // Successful login
       toast.success("Login successful!");
-      
+
       // Redirect based on role
       if (data.role === "admin") {
         router.push("/admin/users");
@@ -159,9 +167,12 @@ export default function LoginPage() {
       return;
     }
 
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/;
+    const passwordRegex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/;
     if (!passwordRegex.test(newPassword)) {
-      toast.error("Password must contain uppercase, lowercase, number, and symbol (@$!%*?&)");
+      toast.error(
+        "Password must contain uppercase, lowercase, number, and symbol (@$!%*?&)",
+      );
       setIsLoading(false);
       return;
     }
@@ -190,7 +201,9 @@ export default function LoginPage() {
 
       // Check if MFA setup is required
       if (data.requireMfaSetup) {
-        toast.info("Your administrator requires you to set up two-factor authentication");
+        toast.info(
+          "Your administrator requires you to set up two-factor authentication",
+        );
         // Start MFA setup flow
         await handleStartMfaSetup();
         return;
@@ -330,7 +343,7 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <motion.div 
+      <motion.div
         className="absolute top-4 right-4"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -346,197 +359,221 @@ export default function LoginPage() {
       >
         <Card>
           {step === "login" && (
-          <>
-            <CardHeader>
-              <CardTitle>Welcome Back</CardTitle>
-              <CardDescription>Sign in to your PrismAuth account</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleLogin} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="john@example.com"
-                    value={formData.email}
-                    onChange={(e) => handleEmailChange(e.target.value)}
-                    required
-                  />
-                  {detectedDomain && (
-                    <p className="text-xs text-purple-600 dark:text-purple-400">
-                      Logging in to tenant: <span className="font-semibold">{detectedDomain}</span>
-                    </p>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    placeholder="••••••••"
-                    value={formData.password}
-                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    required
-                  />
-                </div>
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? "Signing in..." : "Sign In"}
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  className="w-full"
-                  onClick={() => router.push("/forgot-password")}
-                >
-                  Forgot Password?
-                </Button>
-              </form>
-            </CardContent>
-          </>
-        )}
-
-        {step === "passwordChange" && (
-          <>
-            <CardHeader>
-              <CardTitle>Change Password</CardTitle>
-              <CardDescription>
-                You must change your password before continuing
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handlePasswordChange} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="newPassword">New Password</Label>
-                  <Input
-                    id="newPassword"
-                    type="password"
-                    placeholder="••••••••"
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    required
-                  />
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    Must be 8+ characters with uppercase, lowercase, number, and symbol (@$!%*?&)
-                  </p>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="confirmPassword">Confirm New Password</Label>
-                  <Input
-                    id="confirmPassword"
-                    type="password"
-                    placeholder="••••••••"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    required
-                  />
-                </div>
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? "Changing Password..." : "Change Password"}
-                </Button>
-              </form>
-            </CardContent>
-          </>
-        )}
-
-        {step === "mfaSetup" && mfaSetupData && (
-          <>
-            <CardHeader>
-              <CardTitle>Set Up Two-Factor Authentication</CardTitle>
-              <CardDescription>
-                Your administrator requires you to set up 2FA to continue
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleCompleteMfaSetup} className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Step 1: Scan QR Code</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Open your authenticator app (Google Authenticator, Authy, etc.) and scan this QR code:
-                  </p>
-                  <div className="flex justify-center p-4 bg-white rounded-lg">
-                    <Image
-                      src={mfaSetupData.qrCode}
-                      alt="MFA QR Code"
-                      width={200}
-                      height={200}
+            <>
+              <CardHeader>
+                <CardTitle>Welcome Back</CardTitle>
+                <CardDescription>
+                  Sign in to your PrismAuth account
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleLogin} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="john@example.com"
+                      value={formData.email}
+                      onChange={(e) => handleEmailChange(e.target.value)}
+                      required
+                    />
+                    {detectedDomain && (
+                      <p className="text-xs text-purple-600 dark:text-purple-400">
+                        Logging in to tenant:{" "}
+                        <span className="font-semibold">{detectedDomain}</span>
+                      </p>
+                    )}
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="password">Password</Label>
+                    <Input
+                      id="password"
+                      type="password"
+                      placeholder="••••••••"
+                      value={formData.password}
+                      onChange={(e) =>
+                        setFormData({ ...formData, password: e.target.value })
+                      }
+                      required
                     />
                   </div>
-                  <p className="text-xs text-center text-muted-foreground">
-                    Or manually enter this secret: <code className="bg-muted px-2 py-1 rounded">{mfaSetupData.secret}</code>
-                  </p>
-                </div>
+                  <Button type="submit" className="w-full" disabled={isLoading}>
+                    {isLoading ? "Signing in..." : "Sign In"}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="w-full"
+                    onClick={() => router.push("/forgot-password")}
+                  >
+                    Forgot Password?
+                  </Button>
+                </form>
+              </CardContent>
+            </>
+          )}
 
-                <div className="space-y-2">
-                  <Label>Step 2: Save Backup Codes</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Save these backup codes in a secure location. You can use them to access your account if you lose your device.
-                  </p>
-                  <div className="bg-muted p-3 rounded-lg space-y-1">
-                    {mfaSetupData.backupCodes.map((code, index) => (
-                      <div key={index} className="text-sm font-mono">
-                        {code}
-                      </div>
-                    ))}
+          {step === "passwordChange" && (
+            <>
+              <CardHeader>
+                <CardTitle>Change Password</CardTitle>
+                <CardDescription>
+                  You must change your password before continuing
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handlePasswordChange} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="newPassword">New Password</Label>
+                    <Input
+                      id="newPassword"
+                      type="password"
+                      placeholder="••••••••"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      required
+                    />
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      Must be 8+ characters with uppercase, lowercase, number,
+                      and symbol (@$!%*?&)
+                    </p>
                   </div>
-                </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="confirmPassword">
+                      Confirm New Password
+                    </Label>
+                    <Input
+                      id="confirmPassword"
+                      type="password"
+                      placeholder="••••••••"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <Button type="submit" className="w-full" disabled={isLoading}>
+                    {isLoading ? "Changing Password..." : "Change Password"}
+                  </Button>
+                </form>
+              </CardContent>
+            </>
+          )}
 
-                <div className="space-y-2">
-                  <Label htmlFor="mfaSetupCode">Step 3: Enter Verification Code</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Enter the 6-digit code from your authenticator app to verify the setup:
-                  </p>
-                  <Input
-                    id="mfaSetupCode"
-                    type="text"
-                    placeholder="000000"
-                    value={mfaSetupCode}
-                    onChange={(e) => setMfaSetupCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                    maxLength={6}
-                    required
-                  />
-                </div>
+          {step === "mfaSetup" && mfaSetupData && (
+            <>
+              <CardHeader>
+                <CardTitle>Set Up Two-Factor Authentication</CardTitle>
+                <CardDescription>
+                  Your administrator requires you to set up 2FA to continue
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleCompleteMfaSetup} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>Step 1: Scan QR Code</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Open your authenticator app (Google Authenticator, Authy,
+                      etc.) and scan this QR code:
+                    </p>
+                    <div className="flex justify-center p-4 bg-white rounded-lg">
+                      <Image
+                        src={mfaSetupData.qrCode}
+                        alt="MFA QR Code"
+                        width={200}
+                        height={200}
+                      />
+                    </div>
+                    <p className="text-xs text-center text-muted-foreground">
+                      Or manually enter this secret:{" "}
+                      <code className="bg-muted px-2 py-1 rounded">
+                        {mfaSetupData.secret}
+                      </code>
+                    </p>
+                  </div>
 
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? "Verifying..." : "Complete Setup"}
-                </Button>
-              </form>
-            </CardContent>
-          </>
-        )}
+                  <div className="space-y-2">
+                    <Label>Step 2: Save Backup Codes</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Save these backup codes in a secure location. You can use
+                      them to access your account if you lose your device.
+                    </p>
+                    <div className="bg-muted p-3 rounded-lg space-y-1">
+                      {mfaSetupData.backupCodes.map((code, index) => (
+                        <div key={index} className="text-sm font-mono">
+                          {code}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
 
-        {step === "mfa" && (
-          <>
-            <CardHeader>
-              <CardTitle>Two-Factor Authentication</CardTitle>
-              <CardDescription>
-                Enter the 6-digit code from your authenticator app
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleMfaVerification} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="mfaCode">Verification Code</Label>
-                  <Input
-                    id="mfaCode"
-                    type="text"
-                    placeholder="000000"
-                    value={mfaCode}
-                    onChange={(e) => setMfaCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                    maxLength={6}
-                    required
-                  />
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    Or use one of your backup codes
-                  </p>
-                </div>
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? "Verifying..." : "Verify"}
-                </Button>
-              </form>
-            </CardContent>
-          </>
-        )}
+                  <div className="space-y-2">
+                    <Label htmlFor="mfaSetupCode">
+                      Step 3: Enter Verification Code
+                    </Label>
+                    <p className="text-sm text-muted-foreground">
+                      Enter the 6-digit code from your authenticator app to
+                      verify the setup:
+                    </p>
+                    <Input
+                      id="mfaSetupCode"
+                      type="text"
+                      placeholder="000000"
+                      value={mfaSetupCode}
+                      onChange={(e) =>
+                        setMfaSetupCode(
+                          e.target.value.replace(/\D/g, "").slice(0, 6),
+                        )
+                      }
+                      maxLength={6}
+                      required
+                    />
+                  </div>
+
+                  <Button type="submit" className="w-full" disabled={isLoading}>
+                    {isLoading ? "Verifying..." : "Complete Setup"}
+                  </Button>
+                </form>
+              </CardContent>
+            </>
+          )}
+
+          {step === "mfa" && (
+            <>
+              <CardHeader>
+                <CardTitle>Two-Factor Authentication</CardTitle>
+                <CardDescription>
+                  Enter the 6-digit code from your authenticator app
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleMfaVerification} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="mfaCode">Verification Code</Label>
+                    <Input
+                      id="mfaCode"
+                      type="text"
+                      placeholder="000000"
+                      value={mfaCode}
+                      onChange={(e) =>
+                        setMfaCode(
+                          e.target.value.replace(/\D/g, "").slice(0, 6),
+                        )
+                      }
+                      maxLength={6}
+                      required
+                    />
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      Or use one of your backup codes
+                    </p>
+                  </div>
+                  <Button type="submit" className="w-full" disabled={isLoading}>
+                    {isLoading ? "Verifying..." : "Verify"}
+                  </Button>
+                </form>
+              </CardContent>
+            </>
+          )}
         </Card>
       </motion.div>
     </div>

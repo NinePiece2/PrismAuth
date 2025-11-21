@@ -3,7 +3,13 @@
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { motion } from "framer-motion";
 
@@ -60,7 +66,7 @@ export default function Home() {
 
   if (isLoading) {
     return (
-      <motion.div 
+      <motion.div
         className="min-h-screen flex items-center justify-center"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -79,7 +85,7 @@ export default function Home() {
   if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-4">
-        <motion.div 
+        <motion.div
           className="absolute top-4 right-4"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -94,21 +100,24 @@ export default function Home() {
           className="w-full max-w-md"
         >
           <Card>
-          <CardHeader>
-            <CardTitle>Welcome to PrismAuth</CardTitle>
-            <CardDescription>
-              Multi-tenant OAuth2 authentication server
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Please sign in to continue.
-            </p>
-            <div className="flex gap-4">
-              <Button onClick={() => router.push("/login")} className="flex-1">
-                Sign In
-              </Button>
-              {/* Self-registration disabled - users must be created by admins
+            <CardHeader>
+              <CardTitle>Welcome to PrismAuth</CardTitle>
+              <CardDescription>
+                Multi-tenant OAuth2 authentication server
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Please sign in to continue.
+              </p>
+              <div className="flex gap-4">
+                <Button
+                  onClick={() => router.push("/login")}
+                  className="flex-1"
+                >
+                  Sign In
+                </Button>
+                {/* Self-registration disabled - users must be created by admins
               <Button
                 onClick={() => router.push("/register")}
                 variant="outline"
@@ -117,8 +126,8 @@ export default function Home() {
                 Register
               </Button>
               */}
-            </div>
-          </CardContent>
+              </div>
+            </CardContent>
           </Card>
         </motion.div>
       </div>
@@ -126,7 +135,7 @@ export default function Home() {
   }
 
   return (
-    <motion.div 
+    <motion.div
       className="min-h-screen bg-background"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -135,7 +144,7 @@ export default function Home() {
       <nav className="bg-card border-b border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
-            <motion.div 
+            <motion.div
               className="flex items-center"
               initial={{ x: -20, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
@@ -143,7 +152,7 @@ export default function Home() {
             >
               <h1 className="text-xl font-bold">PrismAuth</h1>
             </motion.div>
-            <motion.div 
+            <motion.div
               className="flex items-center space-x-4"
               initial={{ x: 20, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
@@ -174,7 +183,7 @@ export default function Home() {
           </div>
         </div>
       </nav>
-      <motion.div 
+      <motion.div
         className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}

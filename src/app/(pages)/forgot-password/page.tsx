@@ -29,7 +29,7 @@ export default function ForgotPasswordPage() {
     try {
       // Extract tenant domain from email
       const domain = email.split("@")[1];
-      
+
       if (!domain) {
         toast.error("Please enter a valid email address");
         setIsLoading(false);
@@ -78,13 +78,14 @@ export default function ForgotPasswordPage() {
             </div>
             <CardTitle>Check Your Email</CardTitle>
             <CardDescription>
-              We&apos;ve sent password reset instructions to <strong>{email}</strong>
+              We&apos;ve sent password reset instructions to{" "}
+              <strong>{email}</strong>
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-sm text-gray-600 dark:text-gray-400 text-center">
-              If an account exists with this email, you`&apos;`ll receive a password reset link shortly.
-              The link will expire in 1 hour.
+              If an account exists with this email, you`&apos;`ll receive a
+              password reset link shortly. The link will expire in 1 hour.
             </p>
             <div className="space-y-2">
               <Button
@@ -121,7 +122,8 @@ export default function ForgotPasswordPage() {
         <CardHeader>
           <CardTitle>Forgot Password</CardTitle>
           <CardDescription>
-            Enter your email address and we`&apos;`ll send you a link to reset your password
+            Enter your email address and we`&apos;`ll send you a link to reset
+            your password
           </CardDescription>
         </CardHeader>
         <CardContent>

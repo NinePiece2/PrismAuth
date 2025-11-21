@@ -128,7 +128,7 @@ export default function SettingsPage() {
       setShowMfaSetup(false);
       setVerificationCode("");
       setMfaSetupData(null);
-      
+
       // Refresh user data
       checkAuth();
     } catch (error) {
@@ -164,7 +164,7 @@ export default function SettingsPage() {
       toast.success("Two-factor authentication disabled");
       setShowMfaDisable(false);
       setDisableCode("");
-      
+
       // Refresh user data
       checkAuth();
     } catch (error) {
@@ -194,9 +194,12 @@ export default function SettingsPage() {
       return;
     }
 
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/;
+    const passwordRegex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/;
     if (!passwordRegex.test(newPassword)) {
-      toast.error("Password must contain uppercase, lowercase, number, and symbol (@$!%*?&)");
+      toast.error(
+        "Password must contain uppercase, lowercase, number, and symbol (@$!%*?&)",
+      );
       return;
     }
 
@@ -248,7 +251,7 @@ export default function SettingsPage() {
 
   if (isLoading) {
     return (
-      <motion.div 
+      <motion.div
         className="min-h-screen flex items-center justify-center bg-background"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -266,7 +269,7 @@ export default function SettingsPage() {
 
   return (
     <div className="min-h-screen bg-background p-8">
-      <motion.div 
+      <motion.div
         className="absolute top-4 right-4"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -274,13 +277,13 @@ export default function SettingsPage() {
       >
         <ThemeToggle />
       </motion.div>
-      <motion.div 
+      <motion.div
         className="max-w-4xl mx-auto space-y-6"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <motion.div 
+        <motion.div
           className="flex items-center justify-between"
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
@@ -292,17 +295,20 @@ export default function SettingsPage() {
               Manage your account settings and security
             </p>
           </div>
-          <Button variant="outline" onClick={() => {
-            try {
-              if (window.history.length > 1) {
-                router.back();
-              } else {
+          <Button
+            variant="outline"
+            onClick={() => {
+              try {
+                if (window.history.length > 1) {
+                  router.back();
+                } else {
+                  router.push("/");
+                }
+              } catch {
                 router.push("/");
               }
-            } catch {
-              router.push("/");
-            }
-          }}>
+            }}
+          >
             Back
           </Button>
         </motion.div>
@@ -313,26 +319,29 @@ export default function SettingsPage() {
           transition={{ duration: 0.5, delay: 0.2 }}
         >
           <Card>
-          <CardHeader>
-            <CardTitle>Account Information</CardTitle>
-            <CardDescription>Your account details</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <Label>Email</Label>
-              <p className="text-sm mt-1">{user?.email}</p>
-            </div>
-            <div>
-              <Label>Name</Label>
-              <p className="text-sm mt-1">{user?.name || "—"}</p>
-            </div>
-            <div>
-              <Label>Role</Label>
-              <Badge className="mt-1" variant={user?.role === "admin" ? "default" : "secondary"}>
-                {user?.role}
-              </Badge>
-            </div>
-          </CardContent>
+            <CardHeader>
+              <CardTitle>Account Information</CardTitle>
+              <CardDescription>Your account details</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label>Email</Label>
+                <p className="text-sm mt-1">{user?.email}</p>
+              </div>
+              <div>
+                <Label>Name</Label>
+                <p className="text-sm mt-1">{user?.name || "—"}</p>
+              </div>
+              <div>
+                <Label>Role</Label>
+                <Badge
+                  className="mt-1"
+                  variant={user?.role === "admin" ? "default" : "secondary"}
+                >
+                  {user?.role}
+                </Badge>
+              </div>
+            </CardContent>
           </Card>
         </motion.div>
 
@@ -347,15 +356,15 @@ export default function SettingsPage() {
                 <Lock className="h-5 w-5" />
                 Password
               </CardTitle>
-            <CardDescription>
-              Change your password to keep your account secure
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button onClick={() => setShowChangePassword(true)}>
-              Change Password
-            </Button>
-          </CardContent>
+              <CardDescription>
+                Change your password to keep your account secure
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button onClick={() => setShowChangePassword(true)}>
+                Change Password
+              </Button>
+            </CardContent>
           </Card>
         </motion.div>
 
@@ -377,35 +386,44 @@ export default function SettingsPage() {
                   </CardDescription>
                 </div>
                 {user?.mfaEnabled ? (
-                  <Badge variant="default" className="ml-4">Enabled</Badge>
+                  <Badge variant="default" className="ml-4">
+                    Enabled
+                  </Badge>
                 ) : (
-                  <Badge variant="secondary" className="ml-4">Disabled</Badge>
+                  <Badge variant="secondary" className="ml-4">
+                    Disabled
+                  </Badge>
                 )}
               </div>
-          </CardHeader>
-          <CardContent>
-            {user?.mfaEnabled ? (
-              <div className="space-y-4">
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Two-factor authentication is currently enabled on your account.
-                  You&apos;ll need to enter a code from your authenticator app when signing in.
-                </p>
-                <Button variant="destructive" onClick={() => setShowMfaDisable(true)}>
-                  Disable Two-Factor Authentication
-                </Button>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Two-factor authentication adds an extra layer of security to your account.
-                  You&apos;ll need to enter a code from your authenticator app when signing in.
-                </p>
-                <Button onClick={handleStartMfaSetup}>
-                  Enable Two-Factor Authentication
-                </Button>
-              </div>
-            )}
-          </CardContent>
+            </CardHeader>
+            <CardContent>
+              {user?.mfaEnabled ? (
+                <div className="space-y-4">
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Two-factor authentication is currently enabled on your
+                    account. You&apos;ll need to enter a code from your
+                    authenticator app when signing in.
+                  </p>
+                  <Button
+                    variant="destructive"
+                    onClick={() => setShowMfaDisable(true)}
+                  >
+                    Disable Two-Factor Authentication
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Two-factor authentication adds an extra layer of security to
+                    your account. You&apos;ll need to enter a code from your
+                    authenticator app when signing in.
+                  </p>
+                  <Button onClick={handleStartMfaSetup}>
+                    Enable Two-Factor Authentication
+                  </Button>
+                </div>
+              )}
+            </CardContent>
           </Card>
         </motion.div>
       </motion.div>
@@ -423,7 +441,8 @@ export default function SettingsPage() {
             <div>
               <h4 className="font-medium mb-2">1. Scan this QR code</h4>
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                Use your authenticator app (Google Authenticator, Authy, etc.) to scan this code:
+                Use your authenticator app (Google Authenticator, Authy, etc.)
+                to scan this code:
               </p>
               {mfaSetupData?.qrCode && (
                 <div className="flex justify-center p-4 bg-white rounded-lg">
@@ -447,8 +466,8 @@ export default function SettingsPage() {
             <div>
               <h4 className="font-medium mb-2">2. Save your backup codes</h4>
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                Save these backup codes in a safe place. You can use them to access your
-                account if you lose your authenticator device.
+                Save these backup codes in a safe place. You can use them to
+                access your account if you lose your authenticator device.
               </p>
               <div className="bg-secondary p-3 rounded space-y-1 max-h-32 overflow-y-auto">
                 {mfaSetupData?.backupCodes.map((code, i) => (
@@ -478,7 +497,9 @@ export default function SettingsPage() {
                 placeholder="000000"
                 value={verificationCode}
                 onChange={(e) =>
-                  setVerificationCode(e.target.value.replace(/\D/g, "").slice(0, 6))
+                  setVerificationCode(
+                    e.target.value.replace(/\D/g, "").slice(0, 6),
+                  )
                 }
                 maxLength={6}
               />
@@ -573,17 +594,18 @@ export default function SettingsPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => {
-              setShowChangePassword(false);
-              setCurrentPassword("");
-              setNewPassword("");
-              setConfirmPassword("");
-            }}>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowChangePassword(false);
+                setCurrentPassword("");
+                setNewPassword("");
+                setConfirmPassword("");
+              }}
+            >
               Cancel
             </Button>
-            <Button onClick={handleChangePassword}>
-              Change Password
-            </Button>
+            <Button onClick={handleChangePassword}>Change Password</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

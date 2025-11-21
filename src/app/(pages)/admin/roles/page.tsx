@@ -52,7 +52,12 @@ export default function AdminRolesPage() {
   const [roles, setRoles] = useState<CustomRole[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [currentUser, setCurrentUser] = useState<{ id: string; email: string; role: string; name: string | null } | null>(null);
+  const [currentUser, setCurrentUser] = useState<{
+    id: string;
+    email: string;
+    role: string;
+    name: string | null;
+  } | null>(null);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -171,7 +176,7 @@ export default function AdminRolesPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <motion.nav 
+      <motion.nav
         className="bg-card border-b border-border"
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -182,10 +187,7 @@ export default function AdminRolesPage() {
             <div className="flex items-center space-x-8">
               <h1 className="text-xl font-bold">PrismAuth Admin</h1>
               <div className="flex space-x-4">
-                <Button
-                  variant="ghost"
-                  onClick={() => router.push("/")}
-                >
+                <Button variant="ghost" onClick={() => router.push("/")}>
                   Home
                 </Button>
                 <Button
@@ -227,7 +229,7 @@ export default function AdminRolesPage() {
         </div>
       </motion.nav>
 
-      <motion.div 
+      <motion.div
         className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -277,7 +279,10 @@ export default function AdminRolesPage() {
                         placeholder="Describe what this role is for..."
                         value={formData.description}
                         onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-                          setFormData({ ...formData, description: e.target.value })
+                          setFormData({
+                            ...formData,
+                            description: e.target.value,
+                          })
                         }
                         rows={3}
                       />
@@ -334,7 +339,9 @@ export default function AdminRolesPage() {
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <Badge variant={role.isActive ? "default" : "secondary"}>
+                        <Badge
+                          variant={role.isActive ? "default" : "secondary"}
+                        >
                           {role.isActive ? "Active" : "Inactive"}
                         </Badge>
                       </TableCell>

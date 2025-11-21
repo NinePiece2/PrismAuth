@@ -9,14 +9,14 @@ export async function POST(request: NextRequest) {
     if (!token || !password) {
       return NextResponse.json(
         { error: "Token and password are required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     if (password.length < 8) {
       return NextResponse.json(
         { error: "Password must be at least 8 characters long" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -29,21 +29,21 @@ export async function POST(request: NextRequest) {
     if (!resetToken) {
       return NextResponse.json(
         { error: "Invalid or expired reset token" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     if (resetToken.used) {
       return NextResponse.json(
         { error: "This reset token has already been used" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     if (resetToken.expires < new Date()) {
       return NextResponse.json(
         { error: "This reset token has expired" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -67,14 +67,11 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(
       { message: "Password reset successfully" },
-      { status: 200 }
+      { status: 200 },
     );
   } catch (error) {
     console.error("Reset password error:", error);
-    return NextResponse.json(
-      { error: "An error occurred" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "An error occurred" }, { status: 500 });
   }
 }
 
@@ -84,10 +81,7 @@ export async function GET(request: NextRequest) {
     const token = request.nextUrl.searchParams.get("token");
 
     if (!token) {
-      return NextResponse.json(
-        { error: "Token is required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Token is required" }, { status: 400 });
     }
 
     const resetToken = await prisma.passwordResetToken.findUnique({
@@ -107,21 +101,21 @@ export async function GET(request: NextRequest) {
     if (!resetToken) {
       return NextResponse.json(
         { valid: false, error: "Invalid reset token" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     if (resetToken.used) {
       return NextResponse.json(
         { valid: false, error: "This reset token has already been used" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     if (resetToken.expires < new Date()) {
       return NextResponse.json(
         { valid: false, error: "This reset token has expired" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -131,9 +125,6 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error("Verify token error:", error);
-    return NextResponse.json(
-      { error: "An error occurred" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "An error occurred" }, { status: 500 });
   }
 }

@@ -23,7 +23,7 @@ export default function SetupPage() {
   const [isChecking, setIsChecking] = useState(true);
   const [setupComplete, setSetupComplete] = useState(false);
   const [currentStep, setCurrentStep] = useState<SetupStep>(1);
-  
+
   const [tenantName, setTenantName] = useState("");
   const [tenantDomain, setTenantDomain] = useState("");
   const [adminName, setAdminName] = useState("");
@@ -31,7 +31,7 @@ export default function SetupPage() {
   const [adminPassword, setAdminPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-useEffect(() => {
+  useEffect(() => {
     const checkSetupStatus = async () => {
       try {
         const response = await fetch("/api/setup/check");
@@ -50,7 +50,8 @@ useEffect(() => {
     };
 
     checkSetupStatus();
-  }, [router]);  const validateStep1 = (): boolean => {
+  }, [router]);
+  const validateStep1 = (): boolean => {
     if (!tenantName || !tenantDomain) {
       toast.error("Please fill in all tenant information");
       return false;
@@ -78,9 +79,9 @@ useEffect(() => {
 
   const handleAdminUsernameChange = (value: string) => {
     // Remove @ and domain if user pastes full email
-    let cleanValue = value.replace(`@${tenantDomain}`, '');
+    let cleanValue = value.replace(`@${tenantDomain}`, "");
     // Remove any @ symbols
-    cleanValue = cleanValue.replace(/@/g, '');
+    cleanValue = cleanValue.replace(/@/g, "");
     setAdminUsername(cleanValue);
   };
 
@@ -191,11 +192,17 @@ useEffect(() => {
         <CardHeader>
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${currentStep === 1 ? 'bg-purple-600 text-white' : 'bg-green-600 text-white'}`}>
+              <div
+                className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${currentStep === 1 ? "bg-purple-600 text-white" : "bg-green-600 text-white"}`}
+              >
                 1
               </div>
-              <div className={`h-1 w-12 ${currentStep === 2 ? 'bg-purple-600' : 'bg-gray-300 dark:bg-gray-700'}`} />
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${currentStep === 2 ? 'bg-purple-600 text-white' : 'bg-gray-300 dark:bg-gray-700 text-gray-600 dark:text-gray-400'}`}>
+              <div
+                className={`h-1 w-12 ${currentStep === 2 ? "bg-purple-600" : "bg-gray-300 dark:bg-gray-700"}`}
+              />
+              <div
+                className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${currentStep === 2 ? "bg-purple-600 text-white" : "bg-gray-300 dark:bg-gray-700 text-gray-600 dark:text-gray-400"}`}
+              >
                 2
               </div>
             </div>
@@ -204,13 +211,14 @@ useEffect(() => {
             </span>
           </div>
           <CardTitle className="text-2xl">
-            {currentStep === 1 ? 'Welcome to PrismAuth' : 'Create Admin Account'}
+            {currentStep === 1
+              ? "Welcome to PrismAuth"
+              : "Create Admin Account"}
           </CardTitle>
           <CardDescription>
-            {currentStep === 1 
+            {currentStep === 1
               ? "Let's start by setting up your organization"
-              : `Create an administrator account for ${tenantName}`
-            }
+              : `Create an administrator account for ${tenantName}`}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -238,20 +246,19 @@ useEffect(() => {
                     id="tenantDomain"
                     placeholder="mycompany.com"
                     value={tenantDomain}
-                    onChange={(e) => setTenantDomain(e.target.value.toLowerCase())}
+                    onChange={(e) =>
+                      setTenantDomain(e.target.value.toLowerCase())
+                    }
                     required
                   />
                   <p className="text-xs text-gray-500 dark:text-gray-400">
-                    A unique domain identifier (e.g., example.com). This will be used for user emails.
+                    A unique domain identifier (e.g., example.com). This will be
+                    used for user emails.
                   </p>
                 </div>
               </div>
 
-              <Button 
-                onClick={handleNext}
-                className="w-full" 
-                size="lg"
-              >
+              <Button onClick={handleNext} className="w-full" size="lg">
                 Continue
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
@@ -288,7 +295,9 @@ useEffect(() => {
                       type="text"
                       placeholder="admin"
                       value={adminUsername}
-                      onChange={(e) => handleAdminUsernameChange(e.target.value)}
+                      onChange={(e) =>
+                        handleAdminUsernameChange(e.target.value)
+                      }
                       required
                       disabled={isLoading}
                       className="pr-32"
@@ -298,7 +307,10 @@ useEffect(() => {
                     </div>
                   </div>
                   <p className="text-xs text-gray-500 dark:text-gray-400">
-                    Admin email will be: <span className="font-medium">{adminUsername}@{tenantDomain}</span>
+                    Admin email will be:{" "}
+                    <span className="font-medium">
+                      {adminUsername}@{tenantDomain}
+                    </span>
                   </p>
                 </div>
 
@@ -335,7 +347,7 @@ useEffect(() => {
               </div>
 
               <div className="flex gap-3">
-                <Button 
+                <Button
                   type="button"
                   onClick={handleBack}
                   variant="outline"
@@ -346,9 +358,9 @@ useEffect(() => {
                   <ArrowLeft className="w-4 h-4 mr-2" />
                   Back
                 </Button>
-                <Button 
-                  type="submit" 
-                  className="flex-1" 
+                <Button
+                  type="submit"
+                  className="flex-1"
                   disabled={isLoading}
                   size="lg"
                 >

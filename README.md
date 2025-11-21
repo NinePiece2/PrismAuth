@@ -100,6 +100,7 @@ Open [http://localhost:3000](http://localhost:3000) with your browser.
 ## User Roles
 
 ### Admin (System Role)
+
 - Create and manage users
 - Configure OAuth2 applications
 - Create and manage custom roles
@@ -108,12 +109,14 @@ Open [http://localhost:3000](http://localhost:3000) with your browser.
 - View all tenant data
 
 ### User (System Role)
+
 - Access protected resources
 - Enable/disable 2FA
 - Manage personal settings
 - OAuth2 authentication
 
 ### Custom Roles
+
 - Admin-defined roles with specific permissions
 - Per-application permission sets
 - Flexible permission model (read, write, delete, admin, custom)

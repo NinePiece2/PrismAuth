@@ -20,7 +20,9 @@ export async function POST(request: NextRequest) {
     });
 
     if (!tenant) {
-      console.error(`Tenant not found for domain: ${validatedData.tenantDomain}`);
+      console.error(
+        `Tenant not found for domain: ${validatedData.tenantDomain}`,
+      );
       return NextResponse.json(
         { error: "Invalid credentials" },
         { status: 401 },
@@ -45,7 +47,9 @@ export async function POST(request: NextRequest) {
     });
 
     if (!user) {
-      console.error(`User not found for email: ${validatedData.email}, tenantId: ${tenant.id}`);
+      console.error(
+        `User not found for email: ${validatedData.email}, tenantId: ${tenant.id}`,
+      );
       return NextResponse.json(
         { error: "Invalid credentials" },
         { status: 401 },

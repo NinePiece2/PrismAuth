@@ -76,14 +76,23 @@ const COMMON_PERMISSIONS = [
   "view",
 ];
 
-export default function RolePermissionsPage({ params }: { params: Promise<{ id: string }> }) {
+export default function RolePermissionsPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const router = useRouter();
   const [roleId, setRoleId] = useState<string>("");
   const [role, setRole] = useState<CustomRole | null>(null);
   const [applications, setApplications] = useState<Application[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [currentUser, setCurrentUser] = useState<{ id: string; email: string; role: string; name: string | null } | null>(null);
+  const [currentUser, setCurrentUser] = useState<{
+    id: string;
+    email: string;
+    role: string;
+    name: string | null;
+  } | null>(null);
   const [selectedAppId, setSelectedAppId] = useState<string>("");
   const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
   const [customPermission, setCustomPermission] = useState("");
@@ -191,9 +200,12 @@ export default function RolePermissionsPage({ params }: { params: Promise<{ id: 
     }
 
     try {
-      const response = await fetch(`/api/admin/roles/${roleId}/permissions/${permissionId}`, {
-        method: "DELETE",
-      });
+      const response = await fetch(
+        `/api/admin/roles/${roleId}/permissions/${permissionId}`,
+        {
+          method: "DELETE",
+        },
+      );
 
       const data = await response.json();
 
@@ -214,7 +226,7 @@ export default function RolePermissionsPage({ params }: { params: Promise<{ id: 
     setSelectedPermissions((prev) =>
       prev.includes(permission)
         ? prev.filter((p) => p !== permission)
-        : [...prev, permission]
+        : [...prev, permission],
     );
   };
 
@@ -248,12 +260,12 @@ export default function RolePermissionsPage({ params }: { params: Promise<{ id: 
   }
 
   const availableApps = applications.filter(
-    (app) => !role.permissions.some((p) => p.application.id === app.id)
+    (app) => !role.permissions.some((p) => p.application.id === app.id),
   );
 
   return (
     <div className="min-h-screen bg-background">
-      <motion.nav 
+      <motion.nav
         className="bg-card border-b border-border"
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -264,10 +276,7 @@ export default function RolePermissionsPage({ params }: { params: Promise<{ id: 
             <div className="flex items-center space-x-8">
               <h1 className="text-xl font-bold">PrismAuth Admin</h1>
               <div className="flex space-x-4">
-                <Button
-                  variant="ghost"
-                  onClick={() => router.push("/")}
-                >
+                <Button variant="ghost" onClick={() => router.push("/")}>
                   Home
                 </Button>
                 <Button
@@ -309,7 +318,7 @@ export default function RolePermissionsPage({ params }: { params: Promise<{ id: 
         </div>
       </motion.nav>
 
-      <motion.div 
+      <motion.div
         className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -395,7 +404,9 @@ export default function RolePermissionsPage({ params }: { params: Promise<{ id: 
                         <Button
                           variant="destructive"
                           size="sm"
-                          onClick={() => handleDeletePermission(permission.application.id)}
+                          onClick={() =>
+                            handleDeletePermission(permission.application.id)
+                          }
                         >
                           Remove
                         </Button>
@@ -410,110 +421,113 @@ export default function RolePermissionsPage({ params }: { params: Promise<{ id: 
 
         {/* Add Permission Dialog */}
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Add Application Permissions</DialogTitle>
-            <DialogDescription>
-              Select an application and the permissions this role should have
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="application">Application</Label>
-              <Select value={selectedAppId} onValueChange={setSelectedAppId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select an application" />
-                </SelectTrigger>
-                <SelectContent>
-                  {availableApps.map((app) => (
-                    <SelectItem key={app.id} value={app.id}>
-                      {app.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Common Permissions</Label>
-              <div className="grid grid-cols-2 gap-3">
-                {COMMON_PERMISSIONS.map((permission) => (
-                  <div key={permission} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={permission}
-                      checked={selectedPermissions.includes(permission)}
-                      onCheckedChange={() => togglePermission(permission)}
-                    />
-                    <Label
-                      htmlFor={permission}
-                      className="text-sm font-normal cursor-pointer"
-                    >
-                      {permission}
-                    </Label>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="customPermission">Custom Permission</Label>
-              <div className="flex gap-2">
-                <Input
-                  id="customPermission"
-                  placeholder="Enter custom permission..."
-                  value={customPermission}
-                  onChange={(e) => setCustomPermission(e.target.value)}
-                  onKeyPress={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      addCustomPermission();
-                    }
-                  }}
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={addCustomPermission}
-                >
-                  Add
-                </Button>
-              </div>
-            </div>
-
-            {selectedPermissions.length > 0 && (
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Add Application Permissions</DialogTitle>
+              <DialogDescription>
+                Select an application and the permissions this role should have
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
               <div className="space-y-2">
-                <Label>Selected Permissions</Label>
-                <div className="flex flex-wrap gap-2 p-3 bg-secondary rounded-md">
-                  {selectedPermissions.map((perm) => (
-                    <Badge
-                      key={perm}
-                      variant="default"
-                      className="cursor-pointer"
-                      onClick={() => togglePermission(perm)}
+                <Label htmlFor="application">Application</Label>
+                <Select value={selectedAppId} onValueChange={setSelectedAppId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select an application" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableApps.map((app) => (
+                      <SelectItem key={app.id} value={app.id}>
+                        {app.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Common Permissions</Label>
+                <div className="grid grid-cols-2 gap-3">
+                  {COMMON_PERMISSIONS.map((permission) => (
+                    <div
+                      key={permission}
+                      className="flex items-center space-x-2"
                     >
-                      {perm} ×
-                    </Badge>
+                      <Checkbox
+                        id={permission}
+                        checked={selectedPermissions.includes(permission)}
+                        onCheckedChange={() => togglePermission(permission)}
+                      />
+                      <Label
+                        htmlFor={permission}
+                        className="text-sm font-normal cursor-pointer"
+                      >
+                        {permission}
+                      </Label>
+                    </div>
                   ))}
                 </div>
               </div>
-            )}
-          </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setIsAddDialogOpen(false);
-                setSelectedAppId("");
-                setSelectedPermissions([]);
-                setCustomPermission("");
-              }}
-            >
-              Cancel
-            </Button>
-            <Button onClick={handleAddPermission}>Save Permissions</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+
+              <div className="space-y-2">
+                <Label htmlFor="customPermission">Custom Permission</Label>
+                <div className="flex gap-2">
+                  <Input
+                    id="customPermission"
+                    placeholder="Enter custom permission..."
+                    value={customPermission}
+                    onChange={(e) => setCustomPermission(e.target.value)}
+                    onKeyPress={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        addCustomPermission();
+                      }
+                    }}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={addCustomPermission}
+                  >
+                    Add
+                  </Button>
+                </div>
+              </div>
+
+              {selectedPermissions.length > 0 && (
+                <div className="space-y-2">
+                  <Label>Selected Permissions</Label>
+                  <div className="flex flex-wrap gap-2 p-3 bg-secondary rounded-md">
+                    {selectedPermissions.map((perm) => (
+                      <Badge
+                        key={perm}
+                        variant="default"
+                        className="cursor-pointer"
+                        onClick={() => togglePermission(perm)}
+                      >
+                        {perm} ×
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setIsAddDialogOpen(false);
+                  setSelectedAppId("");
+                  setSelectedPermissions([]);
+                  setCustomPermission("");
+                }}
+              >
+                Cancel
+              </Button>
+              <Button onClick={handleAddPermission}>Save Permissions</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </motion.div>
     </div>
   );
