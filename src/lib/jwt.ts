@@ -3,14 +3,13 @@ import {
   jwtVerify,
   importPKCS8,
   importSPKI,
-  type KeyLike,
 } from "jose";
 import { config } from "./config";
 
-let privateKey: KeyLike | null = null;
-let publicKey: KeyLike | null = null;
+let privateKey: CryptoKey | null = null;
+let publicKey: CryptoKey | null = null;
 
-async function getPrivateKey(): Promise<KeyLike> {
+async function getPrivateKey(): Promise<CryptoKey> {
   if (!privateKey && config.jwt.privateKey) {
     privateKey = await importPKCS8(config.jwt.privateKey, "RS256");
   }
@@ -20,7 +19,7 @@ async function getPrivateKey(): Promise<KeyLike> {
   return privateKey;
 }
 
-async function getPublicKey(): Promise<KeyLike> {
+async function getPublicKey(): Promise<CryptoKey> {
   if (!publicKey && config.jwt.publicKey) {
     publicKey = await importSPKI(config.jwt.publicKey, "RS256");
   }
