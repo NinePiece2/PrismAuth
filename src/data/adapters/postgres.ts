@@ -5,6 +5,7 @@
  */
 
 import { prisma } from "@/lib/db";
+import { cacheGet, cacheSet, cacheDel } from "@/lib/redis";
 import { Prisma } from "@prisma/client";
 import type {
   IDataAccess,
@@ -107,9 +108,24 @@ class PostgresUserRepository implements IUserRepository {
 // OAuth Client Repository
 class PostgresOAuthClientRepository implements IOAuthClientRepository {
   async findByClientId(clientId: string): Promise<OAuthClient | null> {
-    return (await prisma.oAuthClient.findUnique({
+    // Try Redis cache first
+    const cacheKey = `client:${clientId}`;
+    const cached = await cacheGet(cacheKey);
+    if (cached) {
+      return JSON.parse(cached) as OAuthClient;
+    }
+
+    // Fallback to database
+    const client = (await prisma.oAuthClient.findUnique({
       where: { clientId },
     })) as OAuthClient | null;
+
+    // Cache for 1 hour if found
+    if (client) {
+      await cacheSet(cacheKey, JSON.stringify(client), 3600);
+    }
+
+    return client;
   }
 
   async findById(id: string): Promise<OAuthClient | null> {
@@ -125,14 +141,25 @@ class PostgresOAuthClientRepository implements IOAuthClientRepository {
   }
 
   async update(id: string, data: Partial<OAuthClient>): Promise<OAuthClient> {
-    return (await prisma.oAuthClient.update({
+    const updated = (await prisma.oAuthClient.update({
       where: { id },
       data,
     })) as OAuthClient;
+
+    // Invalidate cache
+    await cacheDel(`client:${updated.clientId}`);
+
+    return updated;
   }
 
   async delete(id: string): Promise<void> {
+    const client = await prisma.oAuthClient.findUnique({ where: { id } });
     await prisma.oAuthClient.delete({ where: { id } });
+    
+    // Invalidate cache
+    if (client) {
+      await cacheDel(`client:${client.clientId}`);
+    }
   }
 
   async listByTenant(tenantId: string): Promise<OAuthClient[]> {
@@ -146,9 +173,31 @@ class PostgresOAuthClientRepository implements IOAuthClientRepository {
 // Session Repository
 class PostgresSessionRepository implements ISessionRepository {
   async findByToken(token: string): Promise<Session | null> {
-    return (await prisma.session.findUnique({
+    // Try Redis cache first
+    const cacheKey = `session:${token}`;
+    const cached = await cacheGet(cacheKey);
+    if (cached) {
+      const session = JSON.parse(cached);
+      session.expires = new Date(session.expires);
+      session.createdAt = new Date(session.createdAt);
+      session.updatedAt = new Date(session.updatedAt);
+      return session as Session;
+    }
+
+    // Fallback to database
+    const session = (await prisma.session.findUnique({
       where: { sessionToken: token },
     })) as Session | null;
+
+    // Cache until expiry if found
+    if (session) {
+      const ttl = Math.floor((session.expires.getTime() - Date.now()) / 1000);
+      if (ttl > 0) {
+        await cacheSet(cacheKey, JSON.stringify(session), ttl);
+      }
+    }
+
+    return session;
   }
 
   async create(
@@ -158,11 +207,22 @@ class PostgresSessionRepository implements ISessionRepository {
   }
 
   async update(id: string, data: Partial<Session>): Promise<Session> {
-    return (await prisma.session.update({ where: { id }, data })) as Session;
+    const updated = (await prisma.session.update({ where: { id }, data })) as Session;
+    
+    // Invalidate cache
+    await cacheDel(`session:${updated.sessionToken}`);
+    
+    return updated;
   }
 
   async delete(id: string): Promise<void> {
+    const session = await prisma.session.findUnique({ where: { id } });
     await prisma.session.delete({ where: { id } });
+    
+    // Invalidate cache
+    if (session) {
+      await cacheDel(`session:${session.sessionToken}`);
+    }
   }
 
   async deleteExpired(): Promise<number> {
@@ -213,10 +273,31 @@ class PostgresAuthorizationCodeRepository
 // Access Token Repository
 class PostgresAccessTokenRepository implements IAccessTokenRepository {
   async findByToken(token: string): Promise<AccessToken | null> {
-    return await prisma.accessToken.findUnique({
+    // Try Redis cache first
+    const cacheKey = `token:${token}`;
+    const cached = await cacheGet(cacheKey);
+    if (cached) {
+      const accessToken = JSON.parse(cached);
+      accessToken.expiresAt = new Date(accessToken.expiresAt);
+      accessToken.createdAt = new Date(accessToken.createdAt);
+      return accessToken as AccessToken;
+    }
+
+    // Fallback to database
+    const accessToken = await prisma.accessToken.findUnique({
       where: { token },
       include: { user: true },
     });
+
+    // Cache until expiry if found and not revoked
+    if (accessToken && !accessToken.revoked) {
+      const ttl = Math.floor((accessToken.expiresAt.getTime() - Date.now()) / 1000);
+      if (ttl > 0) {
+        await cacheSet(cacheKey, JSON.stringify(accessToken), ttl);
+      }
+    }
+
+    return accessToken;
   }
 
   async create(
@@ -226,14 +307,26 @@ class PostgresAccessTokenRepository implements IAccessTokenRepository {
   }
 
   async revoke(id: string): Promise<void> {
+    const token = await prisma.accessToken.findUnique({ where: { id } });
     await prisma.accessToken.update({
       where: { id },
       data: { revoked: true },
     });
+    
+    // Invalidate cache
+    if (token) {
+      await cacheDel(`token:${token.token}`);
+    }
   }
 
   async delete(id: string): Promise<void> {
+    const token = await prisma.accessToken.findUnique({ where: { id } });
     await prisma.accessToken.delete({ where: { id } });
+    
+    // Invalidate cache
+    if (token) {
+      await cacheDel(`token:${token.token}`);
+    }
   }
 
   async deleteExpired(): Promise<number> {
@@ -254,10 +347,31 @@ class PostgresAccessTokenRepository implements IAccessTokenRepository {
 // Refresh Token Repository
 class PostgresRefreshTokenRepository implements IRefreshTokenRepository {
   async findByToken(token: string): Promise<RefreshToken | null> {
-    return await prisma.refreshToken.findUnique({
+    // Try Redis cache first
+    const cacheKey = `refresh:${token}`;
+    const cached = await cacheGet(cacheKey);
+    if (cached) {
+      const refreshToken = JSON.parse(cached);
+      refreshToken.expiresAt = new Date(refreshToken.expiresAt);
+      refreshToken.createdAt = new Date(refreshToken.createdAt);
+      return refreshToken as RefreshToken;
+    }
+
+    // Fallback to database
+    const refreshToken = await prisma.refreshToken.findUnique({
       where: { token },
       include: { user: true },
     });
+
+    // Cache until expiry if found and not revoked
+    if (refreshToken && !refreshToken.revoked) {
+      const ttl = Math.floor((refreshToken.expiresAt.getTime() - Date.now()) / 1000);
+      if (ttl > 0) {
+        await cacheSet(cacheKey, JSON.stringify(refreshToken), ttl);
+      }
+    }
+
+    return refreshToken;
   }
 
   async create(
@@ -267,14 +381,26 @@ class PostgresRefreshTokenRepository implements IRefreshTokenRepository {
   }
 
   async revoke(id: string): Promise<void> {
+    const token = await prisma.refreshToken.findUnique({ where: { id } });
     await prisma.refreshToken.update({
       where: { id },
       data: { revoked: true },
     });
+    
+    // Invalidate cache
+    if (token) {
+      await cacheDel(`refresh:${token.token}`);
+    }
   }
 
   async delete(id: string): Promise<void> {
+    const token = await prisma.refreshToken.findUnique({ where: { id } });
     await prisma.refreshToken.delete({ where: { id } });
+    
+    // Invalidate cache
+    if (token) {
+      await cacheDel(`refresh:${token.token}`);
+    }
   }
 
   async deleteExpired(): Promise<number> {
