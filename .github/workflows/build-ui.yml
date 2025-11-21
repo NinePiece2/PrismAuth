@@ -7,7 +7,7 @@ on:
     paths:
       - src/**
       - public/**
-      - Dockerfile
+      - docker/Dockerfile
       - package.json
       - bun.lock
   workflow_dispatch:
