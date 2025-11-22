@@ -31,6 +31,15 @@ export default function RegisterPage() {
   useEffect(() => {
     const checkSetup = async () => {
       try {
+        // Check if user is already logged in
+        const authResponse = await fetch("/api/auth/me");
+        if (authResponse.ok) {
+          // User is already authenticated, redirect to home
+          router.push("/");
+          return;
+        }
+
+        // Check if setup is required
         const response = await fetch("/api/setup/check");
         const data = await response.json();
         if (data.setupRequired) {
