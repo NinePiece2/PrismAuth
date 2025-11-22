@@ -17,6 +17,10 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "PrismAuth - OAuth2 Authentication",
   description: "Multi-tenant OAuth2 authentication server",
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
 export default function RootLayout({

@@ -23,6 +23,37 @@ function hasMigrations(): boolean {
 }
 
 /**
+ * Check if database schema is in sync with Prisma schema
+ */
+async function isSchemaSynced(): Promise<boolean> {
+  const schemaPath = join(process.cwd(), "prisma", "schema.prisma");
+
+  // Run prisma migrate status to check for pending migrations
+  const proc = Bun.spawn(
+    ["bun", "prisma", "migrate", "status", "--schema", schemaPath],
+    {
+      stdout: "pipe",
+      stderr: "pipe",
+      env: { ...process.env },
+    },
+  );
+
+  const output = await new Response(proc.stdout).text();
+  const errorOutput = await new Response(proc.stderr).text();
+  const exitCode = await proc.exited;
+
+  // Exit code 0 means everything is in sync
+  // Check output for phrases indicating pending migrations
+  const hasPendingMigrations = 
+    output.includes("following migration have not yet been applied") ||
+    output.includes("following migrations have not yet been applied") ||
+    output.includes("Your database is not in sync") ||
+    exitCode !== 0;
+
+  return !hasPendingMigrations;
+}
+
+/**
  * Run Prisma migrations
  */
 async function runMigrations(): Promise<void> {
@@ -90,6 +121,15 @@ export async function ensureDatabaseSchema(): Promise<void> {
   }
 
   try {
+    // Check if schema is already in sync
+    const isSynced = await isSchemaSynced();
+    
+    if (isSynced) {
+      console.log("✅ Database schema is already up to date");
+      return;
+    }
+
+    console.log("📝 Pending migrations detected, applying...");
     await runMigrations();
   } catch (error) {
     console.error("❌ Database migration failed:", error);
