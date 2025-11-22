@@ -19,6 +19,7 @@ bun run start
 ```
 
 **Advantages:**
+
 - ✅ Full control over when migrations run
 - ✅ No race conditions with multiple instances
 - ✅ Clear deployment logs
@@ -34,31 +35,35 @@ AUTO_MIGRATE=true
 ```
 
 **⚠️ Warning:** Only use this if:
+
 - You have a **single instance** deployment
 - Or you use a **zero-downtime deployment strategy** (e.g., blue-green)
 - Or you accept the risk of migration conflicts
 
 ## Environment Variables
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `AUTO_MIGRATE` | `undefined` | Set to `"true"` to enable auto-migration in production |
+| Variable       | Default     | Description                                               |
+| -------------- | ----------- | --------------------------------------------------------- |
+| `AUTO_MIGRATE` | `undefined` | Set to `"true"` to enable auto-migration in production    |
 | `AUTO_MIGRATE` | `undefined` | Set to `"false"` to disable auto-migration in development |
-| `NODE_ENV` | - | `"production"` disables auto-migration by default |
+| `NODE_ENV`     | -           | `"production"` disables auto-migration by default         |
 
 ## Behavior by Environment
 
 ### Development (`NODE_ENV=development`)
+
 - ✅ Auto-migration **enabled** by default
 - ❌ Stops server if migration fails
 - 💡 Suggests running `bun run db:migrate`
 
 ### Production (`NODE_ENV=production`)
+
 - ❌ Auto-migration **disabled** by default
 - ✅ Must set `AUTO_MIGRATE=true` to enable
 - ❌ Throws error if migration fails (prevents running with wrong schema)
 
 ### Test (`NODE_ENV=test`)
+
 - ❌ Auto-migration always skipped
 
 ## Deployment Strategies
@@ -84,9 +89,9 @@ spec:
   template:
     spec:
       containers:
-      - name: migrate
-        image: your-app-image
-        command: ["bun", "prisma", "migrate", "deploy"]
+        - name: migrate
+          image: your-app-image
+          command: ["bun", "prisma", "migrate", "deploy"]
       restartPolicy: OnFailure
 ```
 
@@ -120,6 +125,7 @@ Add to your build/start command:
 If auto-migration is enabled and fails, the app **will not start**. This is intentional to prevent running with an outdated schema.
 
 **Solution:**
+
 1. Check migration logs
 2. Fix the issue (database permissions, syntax errors, etc.)
 3. Run migration manually: `bun prisma migrate deploy`
@@ -132,6 +138,7 @@ If you have multiple instances starting simultaneously and auto-migration is ena
 **Problem:** Race condition where multiple instances try to apply migrations
 
 **Solution:**
+
 1. Disable auto-migration (`AUTO_MIGRATE=false` or leave unset)
 2. Run migrations in CI/CD before deployment
 3. Use rolling deployment strategy (one instance at a time)
@@ -141,6 +148,7 @@ If you have multiple instances starting simultaneously and auto-migration is ena
 **Problem:** Development migrations not in production
 
 **Solution:**
+
 1. Always commit migration files to version control
 2. Apply migrations in order of creation
 3. Use `prisma migrate deploy` (not `prisma db push`)
@@ -176,6 +184,7 @@ bun run start
 ## Monitoring
 
 Consider adding monitoring for:
+
 - Migration success/failure rates
 - Migration duration
 - Database connection health after migrations

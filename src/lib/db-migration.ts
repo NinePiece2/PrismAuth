@@ -29,17 +29,20 @@ async function runMigrations(): Promise<void> {
   console.log("🔄 Checking database schema...");
 
   const schemaPath = join(process.cwd(), "prisma", "schema.prisma");
-  
+
   // Use local prisma installation (faster than bunx)
   // In production, prisma CLI should be in node_modules
-  const proc = Bun.spawn(["bun", "prisma", "migrate", "deploy", "--schema", schemaPath], {
-    stdout: "inherit",
-    stderr: "inherit",
-    env: { ...process.env },
-  });
+  const proc = Bun.spawn(
+    ["bun", "prisma", "migrate", "deploy", "--schema", schemaPath],
+    {
+      stdout: "inherit",
+      stderr: "inherit",
+      env: { ...process.env },
+    },
+  );
 
   const exitCode = await proc.exited;
-  
+
   if (exitCode !== 0) {
     throw new Error(`Migration failed with exit code ${exitCode}`);
   }
@@ -59,8 +62,13 @@ export async function ensureDatabaseSchema(): Promise<void> {
   }
 
   // Skip in production by default (run migrations separately in CI/CD)
-  if (process.env.NODE_ENV === "production" && process.env.AUTO_MIGRATE !== "true") {
-    console.log("ℹ️  Skipping auto-migration in production. Run migrations manually or set AUTO_MIGRATE=true");
+  if (
+    process.env.NODE_ENV === "production" &&
+    process.env.AUTO_MIGRATE !== "true"
+  ) {
+    console.log(
+      "ℹ️  Skipping auto-migration in production. Run migrations manually or set AUTO_MIGRATE=true",
+    );
     return;
   }
 
@@ -87,7 +95,7 @@ export async function ensureDatabaseSchema(): Promise<void> {
     console.error("❌ Database migration failed:", error);
     // Always throw in development and production to prevent running with wrong schema
     throw new Error(
-      "Database schema migration failed. Please run migrations manually: bun run db:migrate"
+      "Database schema migration failed. Please run migrations manually: bun run db:migrate",
     );
   }
 }

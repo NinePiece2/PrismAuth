@@ -155,7 +155,7 @@ class PostgresOAuthClientRepository implements IOAuthClientRepository {
   async delete(id: string): Promise<void> {
     const client = await prisma.oAuthClient.findUnique({ where: { id } });
     await prisma.oAuthClient.delete({ where: { id } });
-    
+
     // Invalidate cache
     if (client) {
       await cacheDel(`client:${client.clientId}`);
@@ -207,18 +207,21 @@ class PostgresSessionRepository implements ISessionRepository {
   }
 
   async update(id: string, data: Partial<Session>): Promise<Session> {
-    const updated = (await prisma.session.update({ where: { id }, data })) as Session;
-    
+    const updated = (await prisma.session.update({
+      where: { id },
+      data,
+    })) as Session;
+
     // Invalidate cache
     await cacheDel(`session:${updated.sessionToken}`);
-    
+
     return updated;
   }
 
   async delete(id: string): Promise<void> {
     const session = await prisma.session.findUnique({ where: { id } });
     await prisma.session.delete({ where: { id } });
-    
+
     // Invalidate cache
     if (session) {
       await cacheDel(`session:${session.sessionToken}`);
@@ -291,7 +294,9 @@ class PostgresAccessTokenRepository implements IAccessTokenRepository {
 
     // Cache until expiry if found and not revoked
     if (accessToken && !accessToken.revoked) {
-      const ttl = Math.floor((accessToken.expiresAt.getTime() - Date.now()) / 1000);
+      const ttl = Math.floor(
+        (accessToken.expiresAt.getTime() - Date.now()) / 1000,
+      );
       if (ttl > 0) {
         await cacheSet(cacheKey, JSON.stringify(accessToken), ttl);
       }
@@ -312,7 +317,7 @@ class PostgresAccessTokenRepository implements IAccessTokenRepository {
       where: { id },
       data: { revoked: true },
     });
-    
+
     // Invalidate cache
     if (token) {
       await cacheDel(`token:${token.token}`);
@@ -322,7 +327,7 @@ class PostgresAccessTokenRepository implements IAccessTokenRepository {
   async delete(id: string): Promise<void> {
     const token = await prisma.accessToken.findUnique({ where: { id } });
     await prisma.accessToken.delete({ where: { id } });
-    
+
     // Invalidate cache
     if (token) {
       await cacheDel(`token:${token.token}`);
@@ -365,7 +370,9 @@ class PostgresRefreshTokenRepository implements IRefreshTokenRepository {
 
     // Cache until expiry if found and not revoked
     if (refreshToken && !refreshToken.revoked) {
-      const ttl = Math.floor((refreshToken.expiresAt.getTime() - Date.now()) / 1000);
+      const ttl = Math.floor(
+        (refreshToken.expiresAt.getTime() - Date.now()) / 1000,
+      );
       if (ttl > 0) {
         await cacheSet(cacheKey, JSON.stringify(refreshToken), ttl);
       }
@@ -386,7 +393,7 @@ class PostgresRefreshTokenRepository implements IRefreshTokenRepository {
       where: { id },
       data: { revoked: true },
     });
-    
+
     // Invalidate cache
     if (token) {
       await cacheDel(`refresh:${token.token}`);
@@ -396,7 +403,7 @@ class PostgresRefreshTokenRepository implements IRefreshTokenRepository {
   async delete(id: string): Promise<void> {
     const token = await prisma.refreshToken.findUnique({ where: { id } });
     await prisma.refreshToken.delete({ where: { id } });
-    
+
     // Invalidate cache
     if (token) {
       await cacheDel(`refresh:${token.token}`);
