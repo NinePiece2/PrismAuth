@@ -29,7 +29,7 @@ COPY --from=build /app/src ./src
 COPY --from=build /app/tsconfig.json ./tsconfig.json
 
 # Create startup script that runs migrations before starting the app
-RUN printf '#!/bin/sh\nset -e\necho "🔄 Checking migrations directory..."\nls -la ./prisma/migrations/ || echo "No migrations directory found"\necho "🔄 Running database migrations..."\nbun prisma migrate deploy --config ./prisma/prisma.config.ts --schema ./prisma/schema.prisma || { echo "❌ Migration failed"; exit 1; }\necho "✅ Migrations complete"\necho "🚀 Starting application..."\nexec bun start\n' > /app/start.sh && \
+RUN printf '#!/bin/sh\nset -e\necho "🔄 Checking migration status..."\nbun prisma migrate status --config ./prisma/prisma.config.ts --schema ./prisma/schema.prisma || true\necho "🔄 Resolving failed migrations..."\nbun prisma migrate resolve --rolled-back 20241124000000_init --config ./prisma/prisma.config.ts --schema ./prisma/schema.prisma || true\necho "🔄 Running database migrations..."\nbun prisma migrate deploy --config ./prisma/prisma.config.ts --schema ./prisma/schema.prisma || { echo "❌ Migration failed"; exit 1; }\necho "✅ Migrations complete"\necho "🚀 Starting application..."\nexec bun start\n' > /app/start.sh && \
     chmod +x /app/start.sh
 
 EXPOSE 3000
