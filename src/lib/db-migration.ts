@@ -155,7 +155,7 @@ export async function ensureDatabaseSchema(): Promise<void> {
   try {
     // Check if schema is already in sync
     const isSynced = await isSchemaSynced();
-    
+
     if (isSynced) {
       console.log("✅ Database schema is already up to date");
       return;
