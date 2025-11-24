@@ -5,6 +5,8 @@
 
 import { existsSync } from "fs";
 import { join } from "path";
+import { spawn } from "child_process";
+import { promisify } from "util";
 
 /**
  * Check if using PostgreSQL
@@ -23,31 +25,67 @@ function hasMigrations(): boolean {
 }
 
 /**
+ * Execute a command and return the output
+ */
+function execCommand(
+  command: string,
+  args: string[],
+  options: { stdio?: "inherit" | "pipe" } = {},
+): Promise<{ exitCode: number; stdout?: string; stderr?: string }> {
+  return new Promise((resolve, reject) => {
+    const proc = spawn(command, args, {
+      env: { ...process.env },
+      stdio: options.stdio || "pipe",
+    });
+
+    if (options.stdio === "inherit") {
+      proc.on("close", (code) => {
+        resolve({ exitCode: code || 0 });
+      });
+      proc.on("error", reject);
+      return;
+    }
+
+    let stdout = "";
+    let stderr = "";
+
+    proc.stdout?.on("data", (data) => {
+      stdout += data.toString();
+    });
+
+    proc.stderr?.on("data", (data) => {
+      stderr += data.toString();
+    });
+
+    proc.on("close", (code) => {
+      resolve({ exitCode: code || 0, stdout, stderr });
+    });
+
+    proc.on("error", reject);
+  });
+}
+
+/**
  * Check if database schema is in sync with Prisma schema
  */
 async function isSchemaSynced(): Promise<boolean> {
-  const schemaPath = join(process.cwd(), "prisma", "schema.prisma");
+  const configPath = join(process.cwd(), "prisma", "prisma.config.ts");
 
   // Run prisma migrate status to check for pending migrations
-  const proc = Bun.spawn(
-    ["bun", "prisma", "migrate", "status", "--schema", schemaPath],
-    {
-      stdout: "pipe",
-      stderr: "pipe",
-      env: { ...process.env },
-    },
-  );
-
-  const output = await new Response(proc.stdout).text();
-  const errorOutput = await new Response(proc.stderr).text();
-  const exitCode = await proc.exited;
+  const { exitCode, stdout = "" } = await execCommand("bun", [
+    "prisma",
+    "migrate",
+    "status",
+    "--config",
+    configPath,
+  ]);
 
   // Exit code 0 means everything is in sync
   // Check output for phrases indicating pending migrations
-  const hasPendingMigrations = 
-    output.includes("following migration have not yet been applied") ||
-    output.includes("following migrations have not yet been applied") ||
-    output.includes("Your database is not in sync") ||
+  const hasPendingMigrations =
+    stdout.includes("following migration have not yet been applied") ||
+    stdout.includes("following migrations have not yet been applied") ||
+    stdout.includes("Your database is not in sync") ||
     exitCode !== 0;
 
   return !hasPendingMigrations;
@@ -59,20 +97,14 @@ async function isSchemaSynced(): Promise<boolean> {
 async function runMigrations(): Promise<void> {
   console.log("🔄 Checking database schema...");
 
-  const schemaPath = join(process.cwd(), "prisma", "schema.prisma");
+  const configPath = join(process.cwd(), "prisma", "prisma.config.ts");
 
-  // Use local prisma installation (faster than bunx)
-  // In production, prisma CLI should be in node_modules
-  const proc = Bun.spawn(
-    ["bun", "prisma", "migrate", "deploy", "--schema", schemaPath],
-    {
-      stdout: "inherit",
-      stderr: "inherit",
-      env: { ...process.env },
-    },
+  // Use local prisma installation with config file
+  const { exitCode } = await execCommand(
+    "bun",
+    ["prisma", "migrate", "deploy", "--config", configPath],
+    { stdio: "inherit" },
   );
-
-  const exitCode = await proc.exited;
 
   if (exitCode !== 0) {
     throw new Error(`Migration failed with exit code ${exitCode}`);
