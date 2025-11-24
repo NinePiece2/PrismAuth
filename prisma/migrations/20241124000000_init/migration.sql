@@ -1,4 +1,3 @@
-[dotenv@17.2.3] injecting env (12) from .env -- tip: ⚙️  write to custom object with { processEnv: myObject }
 -- CreateSchema
 CREATE SCHEMA IF NOT EXISTS "public";
 
