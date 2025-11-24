@@ -34,7 +34,6 @@ docs
 !README.md
 
 # Development files
-migrations
 scripts
 .vscode
 .idea
@@ -45,6 +44,3 @@ scripts
 *.spec.ts
 *.spec.tsx
 coverage
-
-# Prisma
-prisma/migrations
