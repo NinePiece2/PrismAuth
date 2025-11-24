@@ -29,7 +29,8 @@ COPY --from=build /app/src ./src
 COPY --from=build /app/tsconfig.json ./tsconfig.json
 
 # Create startup script that runs migrations before starting the app
-RUN echo '#!/bin/sh\\nset -e\\necho \"🔄 Running database migrations...\"\\nbun prisma migrate deploy --schema ./prisma/schema.prisma\\necho \"✅ Migrations complete\"\\necho \"🚀 Starting application...\"\\nexec bun start' > /app/start.sh && chmod +x /app/start.sh
+RUN printf '#!/bin/sh\nset -e\necho "🔄 Running database migrations..."\nbun prisma migrate deploy --schema ./prisma/schema.prisma\necho "✅ Migrations complete"\necho "🚀 Starting application..."\nexec bun start\n' > /app/start.sh && \
+    chmod +x /app/start.sh
 
 EXPOSE 3000
 CMD ["/app/start.sh"]
