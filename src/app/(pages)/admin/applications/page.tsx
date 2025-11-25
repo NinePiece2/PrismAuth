@@ -57,8 +57,11 @@ export default function AdminApplicationsPage() {
   const [editingClient, setEditingClient] = useState<OAuthClient | null>(null);
   const [createdClient, setCreatedClient] = useState<OAuthClient | null>(null);
   const [showSecretDialog, setShowSecretDialog] = useState(false);
-  const [regeneratedSecret, setRegeneratedSecret] = useState<string | null>(null);
-  const [showRegeneratedSecretDialog, setShowRegeneratedSecretDialog] = useState(false);
+  const [regeneratedSecret, setRegeneratedSecret] = useState<string | null>(
+    null,
+  );
+  const [showRegeneratedSecretDialog, setShowRegeneratedSecretDialog] =
+    useState(false);
   const [currentUser, setCurrentUser] = useState<{
     id: string;
     email: string;
@@ -197,7 +200,7 @@ export default function AdminApplicationsPage() {
 
   const handleUpdateApplication = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!editingClient) return;
 
     try {
@@ -209,8 +212,13 @@ export default function AdminApplicationsPage() {
         body: JSON.stringify({
           name: editFormData.name,
           description: editFormData.description || null,
-          redirectUris: editFormData.redirectUris.split("\n").filter(uri => uri.trim()),
-          allowedScopes: editFormData.allowedScopes.split(",").map(s => s.trim()).filter(Boolean),
+          redirectUris: editFormData.redirectUris
+            .split("\n")
+            .filter((uri) => uri.trim()),
+          allowedScopes: editFormData.allowedScopes
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean),
         }),
       });
 
@@ -232,14 +240,21 @@ export default function AdminApplicationsPage() {
   };
 
   const handleRegenerateSecret = async (app: OAuthClient) => {
-    if (!confirm("Are you sure you want to regenerate the client secret? The old secret will no longer work.")) {
+    if (
+      !confirm(
+        "Are you sure you want to regenerate the client secret? The old secret will no longer work.",
+      )
+    ) {
       return;
     }
 
     try {
-      const response = await fetch(`/api/admin/clients/${app.id}/regenerate-secret`, {
-        method: "POST",
-      });
+      const response = await fetch(
+        `/api/admin/clients/${app.id}/regenerate-secret`,
+        {
+          method: "POST",
+        },
+      );
 
       const data = await response.json();
 
@@ -602,7 +617,9 @@ export default function AdminApplicationsPage() {
                           <Button
                             variant="destructive"
                             size="sm"
-                            onClick={() => handleDeleteApplication(app.clientId)}
+                            onClick={() =>
+                              handleDeleteApplication(app.clientId)
+                            }
                           >
                             Delete
                           </Button>
@@ -712,7 +729,10 @@ export default function AdminApplicationsPage() {
         </Dialog>
 
         {/* Regenerated Secret Dialog */}
-        <Dialog open={showRegeneratedSecretDialog} onOpenChange={setShowRegeneratedSecretDialog}>
+        <Dialog
+          open={showRegeneratedSecretDialog}
+          onOpenChange={setShowRegeneratedSecretDialog}
+        >
           <DialogContent>
             <DialogHeader>
               <DialogTitle>New Client Secret Generated</DialogTitle>
@@ -725,11 +745,7 @@ export default function AdminApplicationsPage() {
                 <div className="space-y-2">
                   <Label>New Client Secret</Label>
                   <div className="flex gap-2">
-                    <Input
-                      value={regeneratedSecret}
-                      readOnly
-                      type="password"
-                    />
+                    <Input value={regeneratedSecret} readOnly type="password" />
                     <Button
                       type="button"
                       variant="outline"
@@ -740,15 +756,18 @@ export default function AdminApplicationsPage() {
                   </div>
                 </div>
                 <p className="text-sm text-red-600 dark:text-red-400">
-                  ⚠️ Make sure to copy and save the new client secret now. The old secret is no longer valid!
+                  ⚠️ Make sure to copy and save the new client secret now. The
+                  old secret is no longer valid!
                 </p>
               </div>
             )}
             <DialogFooter>
-              <Button onClick={() => {
-                setShowRegeneratedSecretDialog(false);
-                setRegeneratedSecret(null);
-              }}>
+              <Button
+                onClick={() => {
+                  setShowRegeneratedSecretDialog(false);
+                  setRegeneratedSecret(null);
+                }}
+              >
                 I have saved the secret
               </Button>
             </DialogFooter>

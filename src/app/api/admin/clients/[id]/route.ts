@@ -93,9 +93,15 @@ export async function PATCH(
       where: { id },
       data: {
         ...(validatedData.name && { name: validatedData.name }),
-        ...(validatedData.description !== undefined && { description: validatedData.description }),
-        ...(validatedData.allowedScopes && { allowedScopes: validatedData.allowedScopes }),
-        ...(validatedData.redirectUris && { redirectUris: validatedData.redirectUris }),
+        ...(validatedData.description !== undefined && {
+          description: validatedData.description,
+        }),
+        ...(validatedData.allowedScopes && {
+          allowedScopes: validatedData.allowedScopes,
+        }),
+        ...(validatedData.redirectUris && {
+          redirectUris: validatedData.redirectUris,
+        }),
       },
       select: {
         id: true,

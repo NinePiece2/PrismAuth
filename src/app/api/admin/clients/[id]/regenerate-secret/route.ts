@@ -46,7 +46,8 @@ export async function POST(
     // Return the plain secret (only time it will be visible)
     return NextResponse.json({
       clientSecret: newClientSecret,
-      message: "Client secret regenerated successfully. Save this secret - it won't be shown again.",
+      message:
+        "Client secret regenerated successfully. Save this secret - it won't be shown again.",
     });
   } catch (error) {
     console.error("Regenerate secret error:", error);

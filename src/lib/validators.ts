@@ -12,7 +12,13 @@ const redirectUriSchema = z.string().refine(
       // Allow http:// for localhost and 127.0.0.1
       if (url.protocol === "http:") {
         const hostname = url.hostname.toLowerCase();
-        return hostname === "localhost" || hostname === "127.0.0.1" || hostname.startsWith("192.168.") || hostname.startsWith("10.") || hostname.startsWith("172.");
+        return (
+          hostname === "localhost" ||
+          hostname === "127.0.0.1" ||
+          hostname.startsWith("192.168.") ||
+          hostname.startsWith("10.") ||
+          hostname.startsWith("172.")
+        );
       }
       // Require https:// for all other domains
       return url.protocol === "https:";
@@ -21,8 +27,9 @@ const redirectUriSchema = z.string().refine(
     }
   },
   {
-    message: "Invalid redirect URI. Use https:// for production domains or http:// for localhost/local IPs only",
-  }
+    message:
+      "Invalid redirect URI. Use https:// for production domains or http:// for localhost/local IPs only",
+  },
 );
 
 // User schemas

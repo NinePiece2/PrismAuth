@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
     // Parse request body - support both JSON and form-urlencoded
     let body: Record<string, unknown>;
     const contentType = request.headers.get("content-type") || "";
-    
+
     if (contentType.includes("application/x-www-form-urlencoded")) {
       // Parse form data
       const formData = await request.formData();

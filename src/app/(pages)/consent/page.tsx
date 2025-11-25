@@ -52,7 +52,7 @@ function ConsentPageContent() {
           const clients = await response.json();
           const client = clients.find(
             (c: { clientId: string; name: string; description?: string }) =>
-              c.clientId === clientId
+              c.clientId === clientId,
           );
           if (client) {
             setClientInfo({
@@ -169,10 +169,7 @@ function ConsentPageContent() {
             </div>
             <div className="space-y-2">
               {scopes.map((scopeItem) => (
-                <div
-                  key={scopeItem}
-                  className="flex items-start gap-3 text-sm"
-                >
+                <div key={scopeItem} className="flex items-start gap-3 text-sm">
                   <div className="mt-0.5">
                     <svg
                       className="h-5 w-5 text-primary"
