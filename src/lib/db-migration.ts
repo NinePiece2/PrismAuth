@@ -6,7 +6,6 @@
 import { existsSync } from "fs";
 import { join } from "path";
 import { spawn } from "child_process";
-import { promisify } from "util";
 
 /**
  * Check if using PostgreSQL

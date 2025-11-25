@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
-import { randomBytes } from "crypto";
-import { hashPassword } from "@/lib/crypto";
 import { z } from "zod";
 
 const updateClientSchema = z.object({

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,7 +18,7 @@ interface ClientInfo {
   description?: string;
 }
 
-export default function ConsentPage() {
+function ConsentPageContent() {
   const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
   const [clientInfo, setClientInfo] = useState<ClientInfo | null>(null);
@@ -230,5 +230,24 @@ export default function ConsentPage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default function ConsentPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-linear-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
+          <Card className="w-full max-w-md">
+            <CardHeader>
+              <CardTitle>Loading...</CardTitle>
+              <CardDescription>Please wait</CardDescription>
+            </CardHeader>
+          </Card>
+        </div>
+      }
+    >
+      <ConsentPageContent />
+    </Suspense>
   );
 }
