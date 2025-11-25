@@ -77,8 +77,9 @@ export default function AdminUsersPage() {
     name: string | null;
   } | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [tenantDomain, setTenantDomain] = useState("");
+  const [username, setUsername] = useState("");
   const [formData, setFormData] = useState({
-    email: "",
     password: "",
     name: "",
     role: "user",
@@ -91,6 +92,7 @@ export default function AdminUsersPage() {
     checkAuth();
     fetchUsers();
     fetchCustomRoles();
+    fetchTenant();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -140,8 +142,36 @@ export default function AdminUsersPage() {
     }
   };
 
+  const fetchTenant = async () => {
+    try {
+      const response = await fetch("/api/admin/tenants");
+      const data = await response.json();
+      if (data && data.length > 0) {
+        setTenantDomain(data[0].domain);
+      }
+    } catch (error) {
+      console.error("Failed to load tenant:", error);
+    }
+  };
+
+  const handleUsernameChange = (value: string) => {
+    // Remove @ and domain if user pastes full email
+    let cleanValue = value.replace(`@${tenantDomain}`, "");
+    // Remove any @ symbols
+    cleanValue = cleanValue.replace(/@/g, "");
+    setUsername(cleanValue);
+  };
+
   const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!username) {
+      toast.error("Please enter a username");
+      return;
+    }
+
+    // Construct full email with domain
+    const fullEmail = `${username}@${tenantDomain}`;
 
     try {
       const response = await fetch("/api/admin/users", {
@@ -149,7 +179,10 @@ export default function AdminUsersPage() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          email: fullEmail,
+        }),
       });
 
       const data = await response.json();
@@ -161,8 +194,8 @@ export default function AdminUsersPage() {
 
       toast.success("User created successfully");
       setIsCreateDialogOpen(false);
+      setUsername("");
       setFormData({
-        email: "",
         password: "",
         name: "",
         role: "user",
@@ -422,17 +455,28 @@ export default function AdminUsersPage() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="email">Email</Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        placeholder="john@example.com"
-                        value={formData.email}
-                        onChange={(e) =>
-                          setFormData({ ...formData, email: e.target.value })
-                        }
-                        required
-                      />
+                      <Label htmlFor="username">Username</Label>
+                      <div className="relative">
+                        <Input
+                          id="username"
+                          type="text"
+                          placeholder="john"
+                          value={username}
+                          onChange={(e) => handleUsernameChange(e.target.value)}
+                          required
+                          className="pr-32"
+                        />
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-500 dark:text-gray-400 pointer-events-none">
+                          @{tenantDomain || "loading..."}
+                        </div>
+                      </div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        Email will be:{" "}
+                        <span className="font-medium">
+                          {username || "(username)"}@
+                          {tenantDomain || "loading..."}
+                        </span>
+                      </p>
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="password">Password</Label>
