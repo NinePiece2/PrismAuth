@@ -9,10 +9,26 @@ import { ZodError } from "zod";
 /**
  * OAuth2 Token Endpoint
  * POST /api/oauth/token
+ * Accepts both application/json and application/x-www-form-urlencoded
  */
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
+    // Parse request body - support both JSON and form-urlencoded
+    let body: Record<string, unknown>;
+    const contentType = request.headers.get("content-type") || "";
+    
+    if (contentType.includes("application/x-www-form-urlencoded")) {
+      // Parse form data
+      const formData = await request.formData();
+      body = {};
+      formData.forEach((value, key) => {
+        body[key] = value;
+      });
+    } else {
+      // Parse as JSON (default)
+      body = await request.json();
+    }
+
     const validatedParams = tokenSchema.parse(body);
 
     // Verify client credentials

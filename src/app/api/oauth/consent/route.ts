@@ -52,6 +52,26 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid client" }, { status: 400 });
     }
 
+    // Store or update user consent
+    const scopes = scope.split(" ");
+    await prisma.userConsent.upsert({
+      where: {
+        userId_clientId: {
+          userId: user.userId,
+          clientId: client_id,
+        },
+      },
+      update: {
+        scope: scopes,
+        updatedAt: new Date(),
+      },
+      create: {
+        userId: user.userId,
+        clientId: client_id,
+        scope: scopes,
+      },
+    });
+
     // Generate authorization code
     const code = generateAuthorizationCode();
     const expiresAt = new Date(
@@ -64,7 +84,7 @@ export async function POST(request: NextRequest) {
         clientId: client_id,
         userId: user.userId,
         redirectUri: redirect_uri,
-        scope: scope.split(" "),
+        scope: scopes,
         expiresAt,
         codeChallenge: code_challenge || null,
         codeChallengeMethod: code_challenge_method || null,

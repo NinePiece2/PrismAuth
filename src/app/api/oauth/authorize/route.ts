@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { authorizeSchema } from "@/lib/validators";
 import { getCurrentUser } from "@/lib/session";
+import { generateAuthorizationCode } from "@/lib/crypto";
+import { config } from "@/lib/config";
 import { ZodError } from "zod";
 
 /**
@@ -78,8 +80,52 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Check if user has already consented to this client with these scopes
+    const existingConsent = await prisma.userConsent.findUnique({
+      where: {
+        userId_clientId: {
+          userId: user.userId,
+          clientId: validatedParams.client_id,
+        },
+      },
+    });
+
+    // If consent exists and covers all requested scopes, skip consent page
+    const hasAllScopes =
+      existingConsent &&
+      requestedScopes.every((scope) => existingConsent.scope.includes(scope));
+
+    if (hasAllScopes) {
+      // Auto-approve: Generate authorization code directly
+      const code = generateAuthorizationCode();
+      const expiresAt = new Date(
+        Date.now() + config.oauth2.authorizationCodeExpiry * 1000,
+      );
+
+      await prisma.authorizationCode.create({
+        data: {
+          code,
+          clientId: validatedParams.client_id,
+          userId: user.userId,
+          redirectUri: validatedParams.redirect_uri,
+          scope: requestedScopes,
+          expiresAt,
+          codeChallenge: validatedParams.code_challenge || null,
+          codeChallengeMethod: validatedParams.code_challenge_method || null,
+        },
+      });
+
+      // Redirect back to client with authorization code
+      const redirectUrl = new URL(validatedParams.redirect_uri);
+      redirectUrl.searchParams.set("code", code);
+      if (validatedParams.state)
+        redirectUrl.searchParams.set("state", validatedParams.state);
+
+      return NextResponse.redirect(redirectUrl);
+    }
+
     // Redirect to consent page
-    const consentUrl = new URL("/auth/consent", request.url);
+    const consentUrl = new URL("/consent", request.url);
     consentUrl.searchParams.set("client_id", validatedParams.client_id);
     consentUrl.searchParams.set("redirect_uri", validatedParams.redirect_uri);
     consentUrl.searchParams.set("scope", validatedParams.scope);

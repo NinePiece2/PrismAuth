@@ -4,6 +4,27 @@ import { z } from "zod";
 const passwordRegex =
   /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/;
 
+// Custom redirect URI validation that allows http for localhost
+const redirectUriSchema = z.string().refine(
+  (value) => {
+    try {
+      const url = new URL(value);
+      // Allow http:// for localhost and 127.0.0.1
+      if (url.protocol === "http:") {
+        const hostname = url.hostname.toLowerCase();
+        return hostname === "localhost" || hostname === "127.0.0.1" || hostname.startsWith("192.168.") || hostname.startsWith("10.") || hostname.startsWith("172.");
+      }
+      // Require https:// for all other domains
+      return url.protocol === "https:";
+    } catch {
+      return false;
+    }
+  },
+  {
+    message: "Invalid redirect URI. Use https:// for production domains or http:// for localhost/local IPs only",
+  }
+);
+
 // User schemas
 export const registerSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -30,7 +51,7 @@ export const authorizeSchema = z.object({
     message: "Only authorization code flow is supported",
   }),
   client_id: z.string().min(1, "Client ID is required"),
-  redirect_uri: z.string().url("Invalid redirect URI"),
+  redirect_uri: redirectUriSchema,
   scope: z.string().default("openid profile email"),
   state: z.string().optional(),
   code_challenge: z.string().optional(),
@@ -43,7 +64,7 @@ export const tokenSchema = z.object({
     message: "Invalid grant type",
   }),
   code: z.string().optional(),
-  redirect_uri: z.string().url().optional(),
+  redirect_uri: redirectUriSchema.optional(),
   client_id: z.string().min(1, "Client ID is required"),
   client_secret: z.string().min(1, "Client secret is required"),
   code_verifier: z.string().optional(),
@@ -54,7 +75,7 @@ export const createClientSchema = z.object({
   name: z.string().min(1, "Client name is required"),
   description: z.string().optional(),
   redirectUris: z
-    .array(z.string().url("Invalid redirect URI"))
+    .array(redirectUriSchema)
     .min(1, "At least one redirect URI is required"),
   allowedScopes: z.array(z.string()).default(["openid", "profile", "email"]),
   grantTypes: z

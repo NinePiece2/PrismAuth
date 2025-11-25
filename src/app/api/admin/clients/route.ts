@@ -66,6 +66,19 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const validatedData = createClientSchema.parse(body);
 
+    // Verify tenant exists
+    const tenant = await prisma.tenant.findUnique({
+      where: { id: user.tenantId },
+    });
+
+    if (!tenant) {
+      console.error(`Tenant not found: ${user.tenantId}`);
+      return NextResponse.json(
+        { error: "Tenant not found. Please log in again." },
+        { status: 400 },
+      );
+    }
+
     // Generate client credentials
     const { clientId, clientSecret } = generateClientCredentials();
     const hashedSecret = await hashClientSecret(clientSecret);

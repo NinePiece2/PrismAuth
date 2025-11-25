@@ -6,6 +6,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { hashPassword } from "@/lib/crypto";
+import { createSession } from "@/lib/session";
 
 export async function POST(request: NextRequest) {
   try {
@@ -82,6 +83,15 @@ export async function POST(request: NextRequest) {
       });
 
       return { tenant, adminUser };
+    });
+
+    // Create session for the admin user
+    await createSession({
+      id: result.adminUser.id,
+      tenantId: result.adminUser.tenantId,
+      email: result.adminUser.email,
+      name: result.adminUser.name,
+      role: result.adminUser.role,
     });
 
     return NextResponse.json({

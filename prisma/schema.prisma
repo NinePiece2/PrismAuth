@@ -50,6 +50,7 @@ model User {
   accessTokens        AccessToken[]
   refreshTokens       RefreshToken[]
   passwordResetTokens PasswordResetToken[]
+  consents            UserConsent[]
 
   @@unique([email, tenantId])
   @@index([tenantId])
@@ -142,6 +143,7 @@ model OAuthClient {
   accessTokens       AccessToken[]
   refreshTokens      RefreshToken[]
   rolePermissions    RolePermission[]
+  consents           UserConsent[]
 
   @@index([tenantId])
   @@index([clientId])
@@ -205,4 +207,20 @@ model RefreshToken {
   @@index([clientId])
   @@index([userId])
   @@index([expiresAt])
+}
+
+model UserConsent {
+  id        String   @id @default(cuid())
+  userId    String
+  clientId  String
+  scope     String[] // Scopes the user has consented to
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user   User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  client OAuthClient @relation(fields: [clientId], references: [clientId], onDelete: Cascade)
+
+  @@unique([userId, clientId])
+  @@index([userId])
+  @@index([clientId])
 }
