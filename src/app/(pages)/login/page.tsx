@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -27,6 +27,8 @@ interface MfaSetupData {
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const returnTo = searchParams.get("returnTo");
   const [isLoading, setIsLoading] = useState(false);
   const [isCheckingSetup, setIsCheckingSetup] = useState(true);
   const [step, setStep] = useState<LoginStep>("login");
@@ -41,6 +43,21 @@ export default function LoginPage() {
   const [mfaCode, setMfaCode] = useState("");
   const [mfaSetupData, setMfaSetupData] = useState<MfaSetupData | null>(null);
   const [mfaSetupCode, setMfaSetupCode] = useState("");
+
+  const handleSuccessfulAuth = (role?: string) => {
+    if (returnTo) {
+      // Redirect to the returnTo URL
+      window.location.href = returnTo;
+    } else {
+      // Default redirect based on role
+      if (role === "admin") {
+        router.push("/admin/users");
+      } else {
+        router.push("/");
+      }
+      router.refresh();
+    }
+  };
 
   useEffect(() => {
     const checkSetup = async () => {
@@ -138,14 +155,7 @@ export default function LoginPage() {
 
       // Successful login
       toast.success("Login successful!");
-
-      // Redirect based on role
-      if (data.role === "admin") {
-        router.push("/admin/users");
-      } else {
-        router.push("/");
-      }
-      router.refresh();
+      handleSuccessfulAuth(data.role);
     } catch (error) {
       toast.error("An error occurred during login");
       console.error(error);
@@ -225,12 +235,7 @@ export default function LoginPage() {
       }
 
       // Redirect based on role
-      if (data.user.role === "admin") {
-        router.push("/admin/users");
-      } else {
-        router.push("/");
-      }
-      router.refresh();
+      handleSuccessfulAuth(data.user.role);
     } catch (error) {
       toast.error("An error occurred while changing password");
       console.error(error);
@@ -263,14 +268,7 @@ export default function LoginPage() {
       }
 
       toast.success("Login successful!");
-
-      // Redirect based on role
-      if (data.user.role === "admin") {
-        router.push("/admin/users");
-      } else {
-        router.push("/");
-      }
-      router.refresh();
+      handleSuccessfulAuth(data.user.role);
     } catch (error) {
       toast.error("An error occurred during verification");
       console.error(error);
@@ -330,14 +328,7 @@ export default function LoginPage() {
       }
 
       toast.success("Two-factor authentication enabled successfully!");
-
-      // Redirect based on role
-      if (data.user.role === "admin") {
-        router.push("/admin/users");
-      } else {
-        router.push("/");
-      }
-      router.refresh();
+      handleSuccessfulAuth(data.user.role);
     } catch (error) {
       toast.error("An error occurred while verifying MFA setup");
       console.error(error);
