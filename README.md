@@ -77,17 +77,6 @@ Open [http://localhost:3000](http://localhost:3000) with your browser.
 - Multi-step authentication flow (password → password change → MFA)
 - No session creation until all authentication steps complete
 
-## Documentation
-
-- [GETTING_STARTED.md](./GETTING_STARTED.md) - First-time setup guide
-- [SETUP.md](./SETUP.md) - Detailed setup instructions
-- [ARCHITECTURE.md](./ARCHITECTURE.md) - System architecture overview
-- [UI_GUIDE.md](./docs/UI_GUIDE.md) - UI components and styling guide
-- [CUSTOM_ROLES_PERMISSIONS.md](./docs/CUSTOM_ROLES_PERMISSIONS.md) - Custom roles and permissions system
-- [MFA_AND_PASSWORD_CHANGE.md](./docs/MFA_AND_PASSWORD_CHANGE.md) - MFA and password change documentation
-- [CLIENT_INTEGRATION.md](./docs/CLIENT_INTEGRATION.md) - OAuth2 client integration guide
-- [DATABASE_ADAPTERS.md](./docs/DATABASE_ADAPTERS.md) - Database adapter information
-
 ## Tech Stack
 
 - **Framework**: Next.js 16 with App Router
@@ -131,9 +120,7 @@ PrismAuth implements OAuth2 with support for:
 - Token generation and validation
 - User consent management
 - Redirect URI validation
-
-See [CLIENT_INTEGRATION.md](./docs/CLIENT_INTEGRATION.md) for details on integrating OAuth2 clients.
-
+  
 ## Contributing
 
 Feel free to make PRs or Issues.
