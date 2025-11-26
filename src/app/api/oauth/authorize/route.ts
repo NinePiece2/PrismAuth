@@ -38,7 +38,9 @@ export async function GET(request: NextRequest) {
         request.headers.get("x-forwarded-proto") ||
         request.nextUrl.protocol.replace(":", "");
       const loginUrl = new URL(`${protocol}://${host}/login`);
-      loginUrl.searchParams.set("returnTo", request.url);
+      // Construct the returnTo URL using the same host/protocol to avoid localhost issues
+      const returnToUrl = new URL(`${protocol}://${host}${request.nextUrl.pathname}${request.nextUrl.search}`);
+      loginUrl.searchParams.set("returnTo", returnToUrl.toString());
       return NextResponse.redirect(loginUrl);
     }
 
