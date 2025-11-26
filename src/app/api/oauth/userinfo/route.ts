@@ -33,9 +33,12 @@ export async function GET(request: NextRequest) {
                 customRole: {
                   include: {
                     permissions: {
-                      select: {
-                        applicationId: true,
-                        permissions: true,
+                      include: {
+                        application: {
+                          select: {
+                            clientId: true,
+                          },
+                        },
                       },
                     },
                   },
@@ -92,7 +95,7 @@ export async function GET(request: NextRequest) {
       id: ur.customRole.id,
       name: ur.customRole.name,
       permissions: ur.customRole.permissions.map((p) => ({
-        applicationId: p.applicationId,
+        clientId: p.application.clientId,
         permissions: p.permissions,
       })),
     }));

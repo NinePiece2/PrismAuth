@@ -36,7 +36,7 @@ export interface AccessTokenPayload {
     id: string;
     name: string;
     permissions?: Array<{
-      applicationId: string;
+      clientId: string;
       permissions: string[];
     }>;
   }>;
@@ -54,7 +54,7 @@ export interface IDTokenPayload {
     id: string;
     name: string;
     permissions?: Array<{
-      applicationId: string;
+      clientId: string;
       permissions: string[];
     }>;
   }>;
