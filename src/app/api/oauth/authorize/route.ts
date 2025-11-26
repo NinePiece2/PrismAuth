@@ -125,7 +125,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Redirect to consent page
-    const consentUrl = new URL("/consent", request.url);
+    const consentUrl = new URL("/consent", config.baseUrl);
     consentUrl.searchParams.set("client_id", validatedParams.client_id);
     consentUrl.searchParams.set("redirect_uri", validatedParams.redirect_uri);
     consentUrl.searchParams.set("scope", validatedParams.scope);
