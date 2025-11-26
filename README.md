@@ -120,7 +120,7 @@ PrismAuth implements OAuth2 with support for:
 - Token generation and validation
 - User consent management
 - Redirect URI validation
-  
+
 ## Contributing
 
 Feel free to make PRs or Issues.

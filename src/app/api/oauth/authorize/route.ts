@@ -34,7 +34,9 @@ export async function GET(request: NextRequest) {
       // Redirect to login with return URL
       // Use headers to get the actual host instead of request.url to avoid localhost issues in deployment
       const host = request.headers.get("host") || request.nextUrl.host;
-      const protocol = request.headers.get("x-forwarded-proto") || request.nextUrl.protocol.replace(":", "");
+      const protocol =
+        request.headers.get("x-forwarded-proto") ||
+        request.nextUrl.protocol.replace(":", "");
       const loginUrl = new URL(`${protocol}://${host}/login`);
       loginUrl.searchParams.set("returnTo", request.url);
       return NextResponse.redirect(loginUrl);
