@@ -22,6 +22,34 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                function getTheme() {
+                  const cookies = document.cookie.split('; ');
+                  const themeCookie = cookies.find(row => row.startsWith('prismauth-theme='));
+                  const savedTheme = themeCookie?.split('=')[1];
+                  
+                  if (savedTheme === 'dark' || savedTheme === 'light') {
+                    return savedTheme;
+                  }
+                  
+                  if (savedTheme === 'system' || !savedTheme) {
+                    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+                  }
+                  
+                  return 'light';
+                }
+                
+                const theme = getTheme();
+                document.documentElement.classList.add(theme);
+              })();
+            `,
+          }}
+        />
+      </head>
       <body className={`${poppins.className} antialiased`}>
         <ThemeProvider defaultTheme="system" storageKey="prismauth-theme">
           {children}

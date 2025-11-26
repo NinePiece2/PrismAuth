@@ -47,13 +47,17 @@ interface CustomRole {
   name: string;
 }
 
+interface UserCustomRole {
+  customRoleId: string;
+  customRole: CustomRole;
+}
+
 interface User {
   id: string;
   email: string;
   name: string | null;
   role: string;
-  customRoleId: string | null;
-  customRole: CustomRole | null;
+  customRoles: UserCustomRole[];
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -66,10 +70,13 @@ export default function AdminUsersPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isEditRolesDialogOpen, setIsEditRolesDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
   const [userToEdit, setUserToEdit] = useState<User | null>(null);
+  const [userToEditRoles, setUserToEditRoles] = useState<User | null>(null);
   const [editName, setEditName] = useState("");
+  const [editCustomRoleIds, setEditCustomRoleIds] = useState<string[]>([]);
   const [currentUser, setCurrentUser] = useState<{
     id: string;
     email: string;
@@ -83,7 +90,7 @@ export default function AdminUsersPage() {
     password: "",
     name: "",
     role: "user",
-    customRoleId: "",
+    customRoleIds: [] as string[],
     requirePasswordChange: false,
     requireMfaSetup: false,
   });
@@ -199,7 +206,7 @@ export default function AdminUsersPage() {
         password: "",
         name: "",
         role: "user",
-        customRoleId: "",
+        customRoleIds: [],
         requirePasswordChange: false,
         requireMfaSetup: false,
       });
@@ -241,6 +248,12 @@ export default function AdminUsersPage() {
     setIsEditDialogOpen(true);
   };
 
+  const openEditRolesDialog = (user: User) => {
+    setUserToEditRoles(user);
+    setEditCustomRoleIds(user.customRoles.map((cr) => cr.customRoleId));
+    setIsEditRolesDialogOpen(true);
+  };
+
   const handleUpdateName = async () => {
     if (!userToEdit) return;
 
@@ -271,9 +284,9 @@ export default function AdminUsersPage() {
     }
   };
 
-  const handleUpdateCustomRole = async (
+  const handleUpdateCustomRoles = async (
     userId: string,
-    customRoleId: string | null,
+    customRoleIds: string[],
   ) => {
     try {
       const response = await fetch(`/api/admin/users/${userId}`, {
@@ -281,22 +294,31 @@ export default function AdminUsersPage() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ customRoleId }),
+        body: JSON.stringify({ customRoleIds }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        toast.error(data.error || "Failed to update custom role");
+        toast.error(data.error || "Failed to update custom roles");
         return;
       }
 
-      toast.success("Custom role updated successfully");
+      toast.success("Custom roles updated successfully");
       fetchUsers();
     } catch (error) {
-      toast.error("An error occurred while updating custom role");
+      toast.error("An error occurred while updating custom roles");
       console.error(error);
     }
+  };
+
+  const handleSaveCustomRoles = async () => {
+    if (!userToEditRoles) return;
+
+    await handleUpdateCustomRoles(userToEditRoles.id, editCustomRoleIds);
+    setIsEditRolesDialogOpen(false);
+    setUserToEditRoles(null);
+    setEditCustomRoleIds([]);
   };
 
   const openDeleteDialog = (user: User) => {
@@ -345,7 +367,9 @@ export default function AdminUsersPage() {
       user.name?.toLowerCase().includes(query) ||
       user.email.toLowerCase().includes(query) ||
       user.role.toLowerCase().includes(query) ||
-      user.customRole?.name.toLowerCase().includes(query)
+      user.customRoles?.some((cr) =>
+        cr.customRole.name.toLowerCase().includes(query),
+      )
     );
   });
 
@@ -551,28 +575,53 @@ export default function AdminUsersPage() {
                       </Select>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="customRole">Custom Role (Optional)</Label>
-                      <Select
-                        value={formData.customRoleId || "__none__"}
-                        onValueChange={(value) =>
-                          setFormData({
-                            ...formData,
-                            customRoleId: value === "__none__" ? "" : value,
-                          })
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select custom role (optional)" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="__none__">None</SelectItem>
-                          {customRoles.map((role) => (
-                            <SelectItem key={role.id} value={role.id}>
-                              {role.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <Label>Custom Roles (Optional)</Label>
+                      <div className="border rounded-md p-3 space-y-2 max-h-40 overflow-y-auto">
+                        {customRoles.length === 0 ? (
+                          <p className="text-sm text-gray-500">
+                            No custom roles available
+                          </p>
+                        ) : (
+                          customRoles.map((role) => (
+                            <div
+                              key={role.id}
+                              className="flex items-center space-x-2"
+                            >
+                              <Checkbox
+                                id={`role-${role.id}`}
+                                checked={formData.customRoleIds.includes(
+                                  role.id,
+                                )}
+                                onCheckedChange={(checked) => {
+                                  if (checked) {
+                                    setFormData({
+                                      ...formData,
+                                      customRoleIds: [
+                                        ...formData.customRoleIds,
+                                        role.id,
+                                      ],
+                                    });
+                                  } else {
+                                    setFormData({
+                                      ...formData,
+                                      customRoleIds:
+                                        formData.customRoleIds.filter(
+                                          (id) => id !== role.id,
+                                        ),
+                                    });
+                                  }
+                                }}
+                              />
+                              <Label
+                                htmlFor={`role-${role.id}`}
+                                className="text-sm font-normal cursor-pointer"
+                              >
+                                {role.name}
+                              </Label>
+                            </div>
+                          ))
+                        )}
+                      </div>
                     </div>
                     <div className="flex items-center space-x-2">
                       <Checkbox
@@ -761,6 +810,81 @@ export default function AdminUsersPage() {
                   </DialogFooter>
                 </DialogContent>
               </Dialog>
+
+              {/* Edit User Custom Roles Dialog */}
+              <Dialog
+                open={isEditRolesDialogOpen}
+                onOpenChange={setIsEditRolesDialogOpen}
+              >
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Edit Custom Roles</DialogTitle>
+                    <DialogDescription>
+                      Manage custom roles for {userToEditRoles?.email}
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4 py-4">
+                    <div className="space-y-2">
+                      <Label>Custom Roles</Label>
+                      <div className="border rounded-md p-3 space-y-2 max-h-60 overflow-y-auto">
+                        {customRoles.length === 0 ? (
+                          <p className="text-sm text-gray-500">
+                            No custom roles available
+                          </p>
+                        ) : (
+                          customRoles.map((role) => (
+                            <div
+                              key={role.id}
+                              className="flex items-center space-x-2"
+                            >
+                              <Checkbox
+                                id={`edit-role-${role.id}`}
+                                checked={editCustomRoleIds.includes(role.id)}
+                                onCheckedChange={(checked) => {
+                                  if (checked) {
+                                    setEditCustomRoleIds([
+                                      ...editCustomRoleIds,
+                                      role.id,
+                                    ]);
+                                  } else {
+                                    setEditCustomRoleIds(
+                                      editCustomRoleIds.filter(
+                                        (id) => id !== role.id,
+                                      ),
+                                    );
+                                  }
+                                }}
+                              />
+                              <Label
+                                htmlFor={`edit-role-${role.id}`}
+                                className="text-sm font-normal cursor-pointer"
+                              >
+                                {role.name}
+                              </Label>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        setIsEditRolesDialogOpen(false);
+                        setUserToEditRoles(null);
+                        setEditCustomRoleIds([]);
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                    <Button type="button" onClick={handleSaveCustomRoles}>
+                      Save Changes
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
             </div>
           </CardHeader>
           <CardContent>
@@ -819,27 +943,17 @@ export default function AdminUsersPage() {
                         </Select>
                       </TableCell>
                       <TableCell>
-                        <Select
-                          value={user.customRoleId || "__none__"}
-                          onValueChange={(value) =>
-                            handleUpdateCustomRole(
-                              user.id,
-                              value === "__none__" ? null : value,
-                            )
-                          }
-                        >
-                          <SelectTrigger className="w-[180px]">
-                            <SelectValue placeholder="No custom role" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="__none__">None</SelectItem>
-                            {customRoles.map((role) => (
-                              <SelectItem key={role.id} value={role.id}>
-                                {role.name}
-                              </SelectItem>
+                        {user.customRoles.length > 0 ? (
+                          <div className="flex flex-wrap gap-1">
+                            {user.customRoles.map((ur) => (
+                              <Badge key={ur.customRoleId} variant="secondary">
+                                {ur.customRole.name}
+                              </Badge>
                             ))}
-                          </SelectContent>
-                        </Select>
+                          </div>
+                        ) : (
+                          <span className="text-sm text-gray-500">None</span>
+                        )}
                       </TableCell>
                       <TableCell>
                         <Badge
@@ -859,6 +973,13 @@ export default function AdminUsersPage() {
                             onClick={() => openEditDialog(user)}
                           >
                             Edit
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => openEditRolesDialog(user)}
+                          >
+                            Roles
                           </Button>
                           <Button
                             variant="destructive"

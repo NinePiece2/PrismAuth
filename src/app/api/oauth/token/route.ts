@@ -76,7 +76,26 @@ export async function POST(request: NextRequest) {
       // Find and validate authorization code
       const authCode = await prisma.authorizationCode.findUnique({
         where: { code: validatedParams.code },
-        include: { user: true },
+        include: {
+          user: {
+            include: {
+              customRoles: {
+                include: {
+                  customRole: {
+                    include: {
+                      permissions: {
+                        select: {
+                          applicationId: true,
+                          permissions: true,
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
       });
 
       if (
@@ -152,6 +171,16 @@ export async function POST(request: NextRequest) {
       const accessTokenExpiry = config.oauth2.accessTokenExpiry;
       const refreshTokenExpiry = config.oauth2.refreshTokenExpiry;
 
+      // Map custom roles with permissions
+      const customRoles = authCode.user.customRoles.map((ur) => ({
+        id: ur.customRole.id,
+        name: ur.customRole.name,
+        permissions: ur.customRole.permissions.map((p) => ({
+          applicationId: p.applicationId,
+          permissions: p.permissions,
+        })),
+      }));
+
       const accessTokenString = await createAccessToken({
         sub: authCode.userId,
         tenant_id: authCode.user.tenantId,
@@ -159,6 +188,8 @@ export async function POST(request: NextRequest) {
         scope: authCode.scope,
         email: authCode.user.email,
         name: authCode.user.name || undefined,
+        role: authCode.user.role,
+        custom_roles: customRoles.length > 0 ? customRoles : undefined,
       });
 
       const refreshTokenString = generateToken(48);
@@ -198,6 +229,8 @@ export async function POST(request: NextRequest) {
             name: authCode.user.name || undefined,
             picture: authCode.user.image || undefined,
             tenant_id: authCode.user.tenantId,
+            role: authCode.user.role,
+            custom_roles: customRoles.length > 0 ? customRoles : undefined,
           },
           client.clientId,
         );
@@ -232,7 +265,26 @@ export async function POST(request: NextRequest) {
 
       const refreshToken = await prisma.refreshToken.findUnique({
         where: { token: validatedParams.refresh_token },
-        include: { user: true },
+        include: {
+          user: {
+            include: {
+              customRoles: {
+                include: {
+                  customRole: {
+                    include: {
+                      permissions: {
+                        select: {
+                          applicationId: true,
+                          permissions: true,
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
       });
 
       if (
@@ -261,6 +313,17 @@ export async function POST(request: NextRequest) {
 
       // Generate new access token
       const accessTokenExpiry = config.oauth2.accessTokenExpiry;
+
+      // Map custom roles with permissions
+      const refreshCustomRoles = refreshToken.user.customRoles.map((ur) => ({
+        id: ur.customRole.id,
+        name: ur.customRole.name,
+        permissions: ur.customRole.permissions.map((p) => ({
+          applicationId: p.applicationId,
+          permissions: p.permissions,
+        })),
+      }));
+
       const accessTokenString = await createAccessToken({
         sub: refreshToken.userId,
         tenant_id: refreshToken.user.tenantId,
@@ -268,6 +331,9 @@ export async function POST(request: NextRequest) {
         scope: refreshToken.scope,
         email: refreshToken.user.email,
         name: refreshToken.user.name || undefined,
+        role: refreshToken.user.role,
+        custom_roles:
+          refreshCustomRoles.length > 0 ? refreshCustomRoles : undefined,
       });
 
       // Store new access token

@@ -11,7 +11,7 @@ const createUserSchema = z.object({
   password: z.string().min(8),
   name: z.string().optional(),
   role: z.enum(["user", "admin"]),
-  customRoleId: z.string().optional(),
+  customRoleIds: z.array(z.string()).optional().default([]),
   requirePasswordChange: z.boolean().optional(),
   requireMfaSetup: z.boolean().optional(),
 });
@@ -37,11 +37,15 @@ export async function GET() {
         email: true,
         name: true,
         role: true,
-        customRoleId: true,
-        customRole: {
+        customRoles: {
           select: {
-            id: true,
-            name: true,
+            customRoleId: true,
+            customRole: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
           },
         },
         isActive: true,
@@ -96,19 +100,19 @@ export async function POST(request: NextRequest) {
     // Hash password
     const hashedPassword = await hashPassword(validatedData.password);
 
-    // Verify custom role if provided
-    if (validatedData.customRoleId) {
-      const customRole = await prisma.customRole.findFirst({
+    // Verify custom roles if provided
+    if (validatedData.customRoleIds && validatedData.customRoleIds.length > 0) {
+      const customRoles = await prisma.customRole.findMany({
         where: {
-          id: validatedData.customRoleId,
+          id: { in: validatedData.customRoleIds },
           tenantId: currentUser.tenantId,
           isActive: true,
         },
       });
 
-      if (!customRole) {
+      if (customRoles.length !== validatedData.customRoleIds.length) {
         return NextResponse.json(
-          { error: "Invalid custom role" },
+          { error: "One or more invalid custom roles" },
           { status: 400 },
         );
       }
@@ -122,23 +126,30 @@ export async function POST(request: NextRequest) {
         name: validatedData.name || null,
         tenantId: currentUser.tenantId,
         role: validatedData.role,
-        ...(validatedData.customRoleId && {
-          customRoleId: validatedData.customRoleId,
-        }),
         isActive: true,
         requirePasswordChange: validatedData.requirePasswordChange ?? false,
         requireMfaSetup: validatedData.requireMfaSetup ?? false,
+        customRoles: {
+          create:
+            validatedData.customRoleIds?.map((roleId) => ({
+              customRoleId: roleId,
+            })) || [],
+        },
       },
       select: {
         id: true,
         email: true,
         name: true,
         role: true,
-        customRoleId: true,
-        customRole: {
+        customRoles: {
           select: {
-            id: true,
-            name: true,
+            customRoleId: true,
+            customRole: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
           },
         },
         isActive: true,

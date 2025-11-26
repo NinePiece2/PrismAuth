@@ -25,7 +25,26 @@ export async function GET(request: NextRequest) {
     // Verify token from database
     const accessToken = await prisma.accessToken.findUnique({
       where: { token },
-      include: { user: true },
+      include: {
+        user: {
+          include: {
+            customRoles: {
+              include: {
+                customRole: {
+                  include: {
+                    permissions: {
+                      select: {
+                        applicationId: true,
+                        permissions: true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
     });
 
     if (!accessToken || accessToken.revoked) {
@@ -65,7 +84,22 @@ export async function GET(request: NextRequest) {
     const claims: Record<string, unknown> = {
       sub: user.id,
       tenant_id: user.tenantId,
+      role: user.role,
     };
+
+    // Include custom roles with permissions
+    const customRoles = user.customRoles.map((ur) => ({
+      id: ur.customRole.id,
+      name: ur.customRole.name,
+      permissions: ur.customRole.permissions.map((p) => ({
+        applicationId: p.applicationId,
+        permissions: p.permissions,
+      })),
+    }));
+
+    if (customRoles.length > 0) {
+      claims.custom_roles = customRoles;
+    }
 
     if (scopes.includes("email")) {
       claims.email = user.email;

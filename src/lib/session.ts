@@ -68,6 +68,7 @@ export async function isAuthenticated(): Promise<boolean> {
 
 /**
  * Get current user from session
+ * Note: This fetches fresh role data from the database to ensure role changes take effect immediately
  */
 export async function getCurrentUser(): Promise<{
   userId: string;
@@ -81,11 +82,28 @@ export async function getCurrentUser(): Promise<{
     return null;
   }
 
+  // Import prisma here to avoid circular dependency
+  const { prisma } = await import("./db");
+
+  // Fetch current role from database to ensure role changes take effect immediately
+  const dbUser = await prisma.user.findUnique({
+    where: { id: session.userId },
+    select: {
+      role: true,
+      isActive: true,
+    },
+  });
+
+  // If user no longer exists or is inactive, return null
+  if (!dbUser || !dbUser.isActive) {
+    return null;
+  }
+
   return {
     userId: session.userId,
     tenantId: session.tenantId,
     email: session.email!,
     name: session.name,
-    role: session.role!,
+    role: dbUser.role, // Use fresh role from database
   };
 }

@@ -32,7 +32,6 @@ model User {
   name                  String?
   image                 String?
   role                  String    @default("user")
-  customRoleId          String?
   isActive              Boolean   @default(true)
   requirePasswordChange Boolean   @default(false)
   requireMfaSetup       Boolean   @default(false)
@@ -44,7 +43,7 @@ model User {
   updatedAt             DateTime  @updatedAt
 
   tenant              Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  customRole          CustomRole?          @relation(fields: [customRoleId], references: [id], onDelete: SetNull)
+  customRoles         UserCustomRole[]
   sessions            Session[]
   authorizationCodes  AuthorizationCode[]
   accessTokens        AccessToken[]
@@ -55,7 +54,6 @@ model User {
   @@unique([email, tenantId])
   @@index([tenantId])
   @@index([email])
-  @@index([customRoleId])
 }
 
 model CustomRole {
@@ -68,11 +66,25 @@ model CustomRole {
   updatedAt   DateTime @updatedAt
 
   tenant      Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  users       User[]
+  users       UserCustomRole[]
   permissions RolePermission[]
 
   @@unique([name, tenantId])
   @@index([tenantId])
+}
+
+model UserCustomRole {
+  id           String   @id @default(cuid())
+  userId       String
+  customRoleId String
+  assignedAt   DateTime @default(now())
+
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  customRole CustomRole @relation(fields: [customRoleId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, customRoleId])
+  @@index([userId])
+  @@index([customRoleId])
 }
 
 model RolePermission {

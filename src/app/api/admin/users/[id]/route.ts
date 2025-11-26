@@ -5,7 +5,7 @@ import { ZodError, z } from "zod";
 
 const updateUserSchema = z.object({
   role: z.enum(["user", "admin"]).optional(),
-  customRoleId: z.string().nullable().optional(),
+  customRoleIds: z.array(z.string()).optional(),
   name: z.string().nullable().optional(),
 });
 
@@ -40,21 +40,37 @@ export async function PATCH(
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    // Verify custom role if provided
-    if (validatedData.customRoleId) {
-      const customRole = await prisma.customRole.findFirst({
-        where: {
-          id: validatedData.customRoleId,
-          tenantId: currentUser.tenantId,
-          isActive: true,
-        },
+    // Verify custom roles if provided
+    if (validatedData.customRoleIds !== undefined) {
+      if (validatedData.customRoleIds.length > 0) {
+        const customRoles = await prisma.customRole.findMany({
+          where: {
+            id: { in: validatedData.customRoleIds },
+            tenantId: currentUser.tenantId,
+            isActive: true,
+          },
+        });
+
+        if (customRoles.length !== validatedData.customRoleIds.length) {
+          return NextResponse.json(
+            { error: "One or more invalid custom roles" },
+            { status: 400 },
+          );
+        }
+      }
+
+      // Delete existing custom roles and create new ones
+      await prisma.userCustomRole.deleteMany({
+        where: { userId: id },
       });
 
-      if (!customRole) {
-        return NextResponse.json(
-          { error: "Invalid custom role" },
-          { status: 400 },
-        );
+      if (validatedData.customRoleIds.length > 0) {
+        await prisma.userCustomRole.createMany({
+          data: validatedData.customRoleIds.map((roleId) => ({
+            userId: id,
+            customRoleId: roleId,
+          })),
+        });
       }
     }
 
@@ -63,9 +79,6 @@ export async function PATCH(
       where: { id },
       data: {
         ...(validatedData.role && { role: validatedData.role }),
-        ...(validatedData.customRoleId !== undefined && {
-          customRoleId: validatedData.customRoleId,
-        }),
         ...(validatedData.name !== undefined && { name: validatedData.name }),
       },
       select: {
@@ -73,11 +86,15 @@ export async function PATCH(
         email: true,
         name: true,
         role: true,
-        customRoleId: true,
-        customRole: {
+        customRoles: {
           select: {
-            id: true,
-            name: true,
+            customRoleId: true,
+            customRole: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
           },
         },
         isActive: true,

@@ -31,6 +31,15 @@ export interface AccessTokenPayload {
   scope: string[];
   email?: string;
   name?: string;
+  role?: string;
+  custom_roles?: Array<{
+    id: string;
+    name: string;
+    permissions?: Array<{
+      applicationId: string;
+      permissions: string[];
+    }>;
+  }>;
 }
 
 export interface IDTokenPayload {
@@ -40,6 +49,15 @@ export interface IDTokenPayload {
   name?: string;
   picture?: string;
   tenant_id: string;
+  role?: string;
+  custom_roles?: Array<{
+    id: string;
+    name: string;
+    permissions?: Array<{
+      applicationId: string;
+      permissions: string[];
+    }>;
+  }>;
 }
 
 /**
