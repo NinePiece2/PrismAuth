@@ -49,6 +49,31 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Check for recent password reset requests (30-second cooldown)
+    const recentToken = await prisma.passwordResetToken.findFirst({
+      where: {
+        userId: user.id,
+        createdAt: {
+          gte: new Date(Date.now() - 30 * 1000), // Last 30 seconds
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    if (recentToken) {
+      const secondsRemaining = Math.ceil(
+        (30000 - (Date.now() - recentToken.createdAt.getTime())) / 1000,
+      );
+      return NextResponse.json(
+        {
+          error: `Please wait ${secondsRemaining} seconds before requesting another reset email`,
+        },
+        { status: 429 },
+      );
+    }
+
     // Invalidate any existing reset tokens for this user
     await prisma.passwordResetToken.updateMany({
       where: {
@@ -76,7 +101,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Generate reset URL
-    const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
+    const baseUrl = process.env.BASE_URL || "http://localhost:3000";
     const resetUrl = `${baseUrl}/reset-password?token=${resetToken}`;
 
     // Send email
