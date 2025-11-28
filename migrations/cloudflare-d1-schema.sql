@@ -70,7 +70,6 @@ CREATE TABLE IF NOT EXISTS users (
   name TEXT,
   image TEXT,
   role TEXT NOT NULL DEFAULT 'user',
-  customRoleId TEXT,
   isActive INTEGER NOT NULL DEFAULT 1,
   requirePasswordChange INTEGER NOT NULL DEFAULT 0,
   requireMfaSetup INTEGER NOT NULL DEFAULT 0,
@@ -80,14 +79,26 @@ CREATE TABLE IF NOT EXISTS users (
   tenantId TEXT NOT NULL,
   createdAt TEXT NOT NULL,
   updatedAt TEXT NOT NULL,
-  FOREIGN KEY (tenantId) REFERENCES tenants(id) ON DELETE CASCADE,
-  FOREIGN KEY (customRoleId) REFERENCES custom_roles(id) ON DELETE SET NULL
+  FOREIGN KEY (tenantId) REFERENCES tenants(id) ON DELETE CASCADE
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS idx_users_email_tenant ON users(email, tenantId);
 CREATE INDEX IF NOT EXISTS idx_users_tenant ON users(tenantId);
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
-CREATE INDEX IF NOT EXISTS idx_users_custom_role ON users(customRoleId);
+
+-- User Custom Roles junction table (many-to-many)
+CREATE TABLE IF NOT EXISTS user_custom_roles (
+  id TEXT PRIMARY KEY,
+  userId TEXT NOT NULL,
+  customRoleId TEXT NOT NULL,
+  assignedAt TEXT NOT NULL,
+  FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (customRoleId) REFERENCES custom_roles(id) ON DELETE CASCADE
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_user_custom_roles_user_role ON user_custom_roles(userId, customRoleId);
+CREATE INDEX IF NOT EXISTS idx_user_custom_roles_user ON user_custom_roles(userId);
+CREATE INDEX IF NOT EXISTS idx_user_custom_roles_role ON user_custom_roles(customRoleId);
 
 -- OAuth Clients table
 CREATE TABLE IF NOT EXISTS oauth_clients (
@@ -185,3 +196,19 @@ CREATE INDEX IF NOT EXISTS idx_refresh_tokens_token ON refresh_tokens(token);
 CREATE INDEX IF NOT EXISTS idx_refresh_tokens_client ON refresh_tokens(clientId);
 CREATE INDEX IF NOT EXISTS idx_refresh_tokens_user ON refresh_tokens(userId);
 CREATE INDEX IF NOT EXISTS idx_refresh_tokens_expires ON refresh_tokens(expiresAt);
+
+-- User Consent table
+CREATE TABLE IF NOT EXISTS user_consents (
+  id TEXT PRIMARY KEY,
+  userId TEXT NOT NULL,
+  clientId TEXT NOT NULL,
+  scope TEXT NOT NULL, -- JSON array stored as TEXT
+  createdAt TEXT NOT NULL,
+  updatedAt TEXT NOT NULL,
+  FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (clientId) REFERENCES oauth_clients(clientId) ON DELETE CASCADE
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_user_consents_user_client ON user_consents(userId, clientId);
+CREATE INDEX IF NOT EXISTS idx_user_consents_user ON user_consents(userId);
+CREATE INDEX IF NOT EXISTS idx_user_consents_client ON user_consents(clientId);
