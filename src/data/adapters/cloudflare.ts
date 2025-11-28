@@ -653,9 +653,7 @@ class CloudflareSessionRepository implements ISessionRepository {
 }
 
 // Authorization Code Repository
-class CloudflareAuthorizationCodeRepository
-  implements IAuthorizationCodeRepository
-{
+class CloudflareAuthorizationCodeRepository implements IAuthorizationCodeRepository {
   constructor(private db: D1Database) {}
 
   async findByCode(code: string): Promise<AuthorizationCode | null> {

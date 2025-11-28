@@ -237,9 +237,7 @@ class PostgresSessionRepository implements ISessionRepository {
 }
 
 // Authorization Code Repository
-class PostgresAuthorizationCodeRepository
-  implements IAuthorizationCodeRepository
-{
+class PostgresAuthorizationCodeRepository implements IAuthorizationCodeRepository {
   async findByCode(code: string): Promise<AuthorizationCode | null> {
     return (await prisma.authorizationCode.findUnique({
       where: { code },
