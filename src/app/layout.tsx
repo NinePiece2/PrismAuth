@@ -32,8 +32,12 @@ export default function RootLayout({
                   const themeCookie = cookies.find(row => row.startsWith('prismauth-theme='));
                   const savedTheme = themeCookie?.split('=')[1];
                   
-                  if (savedTheme === 'dark' || savedTheme === 'light') {
-                    return savedTheme;
+                  if (savedTheme === 'dark') {
+                    return 'dark';
+                  }
+                  
+                  if (savedTheme === 'light') {
+                    return 'light';
                   }
                   
                   if (savedTheme === 'system' || !savedTheme) {
@@ -44,7 +48,9 @@ export default function RootLayout({
                 }
                 
                 const theme = getTheme();
-                document.documentElement.classList.add(theme);
+                if (theme === 'dark') {
+                  document.documentElement.classList.add('dark');
+                }
               })();
             `,
           }}
