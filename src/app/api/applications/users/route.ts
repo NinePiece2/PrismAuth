@@ -125,7 +125,7 @@ export async function POST(request: NextRequest) {
               customRole: {
                 name: {
                   equals: validatedData.role,
-                  mode: 'insensitive',
+                  mode: "insensitive",
                 },
                 isActive: true,
               },
