@@ -123,7 +123,10 @@ export async function POST(request: NextRequest) {
           customRoles: {
             some: {
               customRole: {
-                name: validatedData.role,
+                name: {
+                  equals: validatedData.role,
+                  mode: 'insensitive',
+                },
                 isActive: true,
               },
             },
@@ -139,7 +142,8 @@ export async function POST(request: NextRequest) {
         },
       });
     } else if (validatedData.permission) {
-      // Find users by permission
+      // Find users by permission (case-insensitive)
+      const permissionLower = validatedData.permission.toLowerCase();
       const permissionFilter: {
         permissions: {
           has: string;
@@ -147,7 +151,7 @@ export async function POST(request: NextRequest) {
         applicationId?: string;
       } = {
         permissions: {
-          has: validatedData.permission,
+          has: permissionLower,
         },
       };
 
