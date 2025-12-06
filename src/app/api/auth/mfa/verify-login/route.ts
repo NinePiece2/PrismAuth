@@ -3,10 +3,12 @@ import { prisma } from "@/lib/db";
 import * as OTPAuth from "otpauth";
 import { createSession } from "@/lib/session";
 import { ZodError, z } from "zod";
+import { createHash } from "crypto";
 
 const verifyMfaSchema = z.object({
   userId: z.string(),
   code: z.string().min(6),
+  trustDevice: z.boolean().optional(),
 });
 
 /**
@@ -99,6 +101,47 @@ export async function POST(request: NextRequest) {
       name: user.name,
       role: user.role,
     });
+
+    // Handle trusted device if requested
+    if (validatedData.trustDevice) {
+      const userAgent = request.headers.get("user-agent") || "unknown";
+      const ip = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown";
+      
+      // Create a device identifier (hash of user agent + IP)
+      const deviceIdentifier = createHash("sha256")
+        .update(`${userAgent}-${ip}`)
+        .digest("hex");
+
+      // Check if device already exists
+      const existingDevice = await prisma.mfaTrustedDevice.findUnique({
+        where: {
+          userId_deviceIdentifier: {
+            userId: user.id,
+            deviceIdentifier,
+          },
+        },
+      });
+
+      if (!existingDevice) {
+        // Trust device for 30 days
+        const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+        await prisma.mfaTrustedDevice.create({
+          data: {
+            userId: user.id,
+            deviceIdentifier,
+            userAgent,
+            expiresAt,
+          },
+        });
+      } else if (existingDevice.expiresAt < new Date()) {
+        // Extend expiration if device exists but expired
+        const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+        await prisma.mfaTrustedDevice.update({
+          where: { id: existingDevice.id },
+          data: { expiresAt },
+        });
+      }
+    }
 
     return NextResponse.json({
       success: true,

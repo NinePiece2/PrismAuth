@@ -50,6 +50,7 @@ model User {
   refreshTokens       RefreshToken[]
   passwordResetTokens PasswordResetToken[]
   consents            UserConsent[]
+  mfaTrustedDevices   MfaTrustedDevice[]
 
   @@unique([email, tenantId])
   @@index([tenantId])
@@ -235,4 +236,20 @@ model UserConsent {
   @@unique([userId, clientId])
   @@index([userId])
   @@index([clientId])
+}
+
+model MfaTrustedDevice {
+  id               String   @id @default(cuid())
+  userId           String
+  deviceIdentifier String   // Unique identifier for the device (hashed fingerprint)
+  userAgent        String?  // Store user agent for reference
+  expiresAt        DateTime
+  createdAt        DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, deviceIdentifier])
+  @@index([userId])
+  @@index([deviceIdentifier])
+  @@index([expiresAt])
 }

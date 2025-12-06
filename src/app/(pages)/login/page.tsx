@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Card,
   CardContent,
@@ -41,6 +42,7 @@ function LoginPageContent() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [mfaCode, setMfaCode] = useState("");
+  const [trustDevice, setTrustDevice] = useState(false);
   const [mfaSetupData, setMfaSetupData] = useState<MfaSetupData | null>(null);
   const [mfaSetupCode, setMfaSetupCode] = useState("");
 
@@ -257,6 +259,7 @@ function LoginPageContent() {
         body: JSON.stringify({
           userId,
           code: mfaCode,
+          trustDevice,
         }),
       });
 
@@ -566,6 +569,19 @@ function LoginPageContent() {
                     <p className="text-xs text-gray-500 dark:text-gray-400">
                       Or use one of your backup codes
                     </p>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="trustDevice"
+                      checked={trustDevice}
+                      onCheckedChange={(checked) => setTrustDevice(checked === true)}
+                    />
+                    <Label
+                      htmlFor="trustDevice"
+                      className="text-sm font-normal cursor-pointer"
+                    >
+                      Trust this device for 30 days
+                    </Label>
                   </div>
                   <Button type="submit" className="w-full" disabled={isLoading}>
                     {isLoading ? "Verifying..." : "Verify"}

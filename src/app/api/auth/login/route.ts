@@ -4,6 +4,7 @@ import { loginSchema } from "@/lib/validators";
 import { verifyPassword } from "@/lib/crypto";
 import { createSession } from "@/lib/session";
 import { ZodError } from "zod";
+import { createHash } from "crypto";
 
 /**
  * User Login
@@ -96,6 +97,44 @@ export async function POST(request: NextRequest) {
 
     // Check if user has MFA enabled
     if (user.mfaEnabled) {
+      // Check for trusted device
+      const userAgent = request.headers.get("user-agent") || "unknown";
+      const ip = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown";
+      
+      const deviceIdentifier = createHash("sha256")
+        .update(`${userAgent}-${ip}`)
+        .digest("hex");
+
+      const trustedDevice = await prisma.mfaTrustedDevice.findUnique({
+        where: {
+          userId_deviceIdentifier: {
+            userId: user.id,
+            deviceIdentifier,
+          },
+        },
+      });
+
+      // If device is trusted and not expired, skip MFA
+      if (trustedDevice && trustedDevice.expiresAt > new Date()) {
+        // Create session and skip MFA
+        await createSession({
+          id: user.id,
+          tenantId: user.tenantId,
+          email: user.email,
+          name: user.name,
+          role: user.role,
+        });
+
+        return NextResponse.json({
+          success: true,
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          tenantId: user.tenantId,
+          role: user.role,
+        });
+      }
+
       return NextResponse.json({
         requireMfa: true,
         userId: user.id,
