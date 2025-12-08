@@ -5,7 +5,7 @@ import { prisma } from "@/lib/db";
 /**
  * User Logout
  * POST /api/auth/logout
- * 
+ *
  * Logs out the user by:
  * 1. Destroying their session
  * 2. Revoking all their active OAuth access tokens
@@ -15,10 +15,10 @@ export async function POST() {
   try {
     // Get user before destroying session
     const user = await getCurrentUser();
-    
+
     // Destroy session
     await destroySession();
-    
+
     // If user was logged in, revoke all their OAuth tokens
     if (user) {
       // Revoke all access tokens for this user
@@ -43,7 +43,7 @@ export async function POST() {
         },
       });
     }
-    
+
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Logout error:", error);

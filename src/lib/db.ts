@@ -9,12 +9,14 @@ const globalForPrisma = globalThis as unknown as {
 
 // Create connection pool - Bun optimizes the pg library automatically
 // Using a pool with optimized settings for better performance
-const pool = globalForPrisma.pool ?? new Pool({
-  connectionString: process.env.DATABASE_URL,
-  max: 20, // Maximum pool size
-  idleTimeoutMillis: 30000, // Close idle connections after 30 seconds
-  connectionTimeoutMillis: 10000,
-});
+const pool =
+  globalForPrisma.pool ??
+  new Pool({
+    connectionString: process.env.DATABASE_URL,
+    max: 20, // Maximum pool size
+    idleTimeoutMillis: 30000, // Close idle connections after 30 seconds
+    connectionTimeoutMillis: 10000,
+  });
 
 if (process.env.NODE_ENV !== "production") globalForPrisma.pool = pool;
 

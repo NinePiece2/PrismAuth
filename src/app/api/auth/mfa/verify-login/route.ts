@@ -105,8 +105,11 @@ export async function POST(request: NextRequest) {
     // Handle trusted device if requested
     if (validatedData.trustDevice) {
       const userAgent = request.headers.get("user-agent") || "unknown";
-      const ip = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown";
-      
+      const ip =
+        request.headers.get("x-forwarded-for") ||
+        request.headers.get("x-real-ip") ||
+        "unknown";
+
       // Create a device identifier (hash of user agent + IP)
       const deviceIdentifier = createHash("sha256")
         .update(`${userAgent}-${ip}`)

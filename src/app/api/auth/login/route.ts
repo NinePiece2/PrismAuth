@@ -99,8 +99,11 @@ export async function POST(request: NextRequest) {
     if (user.mfaEnabled) {
       // Check for trusted device
       const userAgent = request.headers.get("user-agent") || "unknown";
-      const ip = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown";
-      
+      const ip =
+        request.headers.get("x-forwarded-for") ||
+        request.headers.get("x-real-ip") ||
+        "unknown";
+
       const deviceIdentifier = createHash("sha256")
         .update(`${userAgent}-${ip}`)
         .digest("hex");

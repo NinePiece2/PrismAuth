@@ -574,7 +574,9 @@ function LoginPageContent() {
                     <Checkbox
                       id="trustDevice"
                       checked={trustDevice}
-                      onCheckedChange={(checked) => setTrustDevice(checked === true)}
+                      onCheckedChange={(checked) =>
+                        setTrustDevice(checked === true)
+                      }
                     />
                     <Label
                       htmlFor="trustDevice"
