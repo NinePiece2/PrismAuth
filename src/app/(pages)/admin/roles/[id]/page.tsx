@@ -194,20 +194,31 @@ export default function RolePermissionsPage({
     }
   };
 
-  const handleDeletePermission = async (permissionId: string) => {
+  const handleDeletePermission = async (applicationId: string) => {
     if (!confirm("Are you sure you want to remove these permissions?")) {
       return;
     }
 
     try {
       const response = await fetch(
-        `/api/admin/roles/${roleId}/permissions/${permissionId}`,
+        `/api/admin/roles/${roleId}/permissions?applicationId=${encodeURIComponent(applicationId)}`,
         {
           method: "DELETE",
         },
       );
 
-      const data = await response.json();
+      let data;
+      const contentType = response.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
+        data = await response.json();
+      } else {
+        const text = await response.text();
+        try {
+          data = JSON.parse(text);
+        } catch {
+          data = { error: text };
+        }
+      }
 
       if (!response.ok) {
         toast.error(data.error || "Failed to delete permissions");

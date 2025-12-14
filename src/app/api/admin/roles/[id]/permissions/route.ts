@@ -168,8 +168,10 @@ export async function DELETE(
     }
 
     const url = new URL(_request.url);
-    const pathParts = url.pathname.split("/");
-    const applicationId = pathParts[pathParts.length - 1];
+    const applicationId = url.searchParams.get("applicationId");
+    if (!applicationId) {
+      return NextResponse.json({ error: "Missing applicationId" }, { status: 400 });
+    }
 
     // Verify role belongs to tenant
     const role = await prisma.customRole.findFirst({
@@ -183,7 +185,20 @@ export async function DELETE(
       return NextResponse.json({ error: "Role not found" }, { status: 404 });
     }
 
-    // Delete permission
+    // Check if permission exists
+    const permission = await prisma.rolePermission.findUnique({
+      where: {
+        roleId_applicationId: {
+          roleId,
+          applicationId,
+        },
+      },
+    });
+
+    if (!permission) {
+      return NextResponse.json({ error: "Permission not found" }, { status: 404 });
+    }
+
     await prisma.rolePermission.delete({
       where: {
         roleId_applicationId: {
