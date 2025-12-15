@@ -170,7 +170,10 @@ export async function DELETE(
     const url = new URL(_request.url);
     const applicationId = url.searchParams.get("applicationId");
     if (!applicationId) {
-      return NextResponse.json({ error: "Missing applicationId" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Missing applicationId" },
+        { status: 400 },
+      );
     }
 
     // Verify role belongs to tenant
@@ -196,7 +199,10 @@ export async function DELETE(
     });
 
     if (!permission) {
-      return NextResponse.json({ error: "Permission not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Permission not found" },
+        { status: 404 },
+      );
     }
 
     await prisma.rolePermission.delete({
