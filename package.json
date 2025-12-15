@@ -16,7 +16,9 @@
     "db:seed": "bun prisma/seed.ts",
     "create:admin": "bun scripts/create-admin.ts",
     "generate:keys": "bun scripts/generate-keys.ts",
-    "quickstart": "powershell -ExecutionPolicy Bypass -File ./scripts/quickstart.ps1"
+    "quickstart": "powershell -ExecutionPolicy Bypass -File ./scripts/quickstart.ps1",
+    "predev": "bun run format",
+    "prebuild": "bun run format && bun run lint"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
