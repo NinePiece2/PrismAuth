@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { tokenSchema } from "@/lib/validators";
 import { verifyClientSecret, verifyPKCE, generateToken } from "@/lib/crypto";
+import { randomBytes } from "crypto";
 import { createAccessToken, createIDToken } from "@/lib/jwt";
 import { Prisma } from "@prisma/client";
 // Helper to create a unique access token, retrying on collision
@@ -9,41 +10,39 @@ import type { AccessTokenPayload as JWTAccessTokenPayload } from "@/lib/jwt";
 
 type AccessTokenPayload = JWTAccessTokenPayload;
 
-async function createUniqueAccessToken(
-  payload: AccessTokenPayload,
+async function createUniqueDbToken(
   clientId: string,
   userId: string,
   scope: string[],
   expiresAt: Date,
   maxRetries = 5,
 ): Promise<string> {
-  let token = await createAccessToken(payload);
   for (let i = 0; i < maxRetries; i++) {
+    const dbToken = randomBytes(48).toString("base64url");
     try {
       await prisma.accessToken.create({
         data: {
-          token,
+          token: dbToken,
           client: { connect: { clientId } },
           user: { connect: { id: userId } },
           scope,
           expiresAt,
         },
       });
-      return token;
+      return dbToken;
     } catch (error) {
       if (
         error instanceof Prisma.PrismaClientKnownRequestError &&
         error.code === "P2002"
       ) {
-        // Token collision, regenerate token and retry
-        token = await createAccessToken(payload);
+        // Token collision, try again
         continue;
       }
       throw error;
     }
   }
   throw new Error(
-    "Failed to generate a unique access token after several attempts",
+    "Failed to generate a unique DB access token after several attempts",
   );
 }
 import { config } from "@/lib/config";
@@ -242,8 +241,8 @@ export async function POST(request: NextRequest) {
       const expiresAt = new Date(Date.now() + accessTokenExpiry * 1000);
       const refreshExpiresAt = new Date(Date.now() + refreshTokenExpiry * 1000);
 
-      const accessTokenString = await createUniqueAccessToken(
-        accessTokenPayload,
+      // Store a random DB token, return JWT to client
+      await createUniqueDbToken(
         client.clientId,
         authCode.userId,
         authCode.scope,
@@ -278,8 +277,10 @@ export async function POST(request: NextRequest) {
         );
       }
 
+      // Return JWT as access_token
+      const jwtAccessToken = await createAccessToken(accessTokenPayload);
       const response: Record<string, unknown> = {
-        access_token: accessTokenString,
+        access_token: jwtAccessToken,
         token_type: "Bearer",
         expires_in: accessTokenExpiry,
         refresh_token: refreshTokenString,
@@ -381,16 +382,17 @@ export async function POST(request: NextRequest) {
           refreshCustomRoles.length > 0 ? refreshCustomRoles : undefined,
       };
       const expiresAt = new Date(Date.now() + accessTokenExpiry * 1000);
-      const accessTokenString = await createUniqueAccessToken(
-        refreshAccessTokenPayload,
+      await createUniqueDbToken(
         client.clientId,
         refreshToken.userId,
         refreshToken.scope,
         expiresAt,
       );
 
+      // Return JWT as access_token
+      const jwtAccessToken = await createAccessToken(refreshAccessTokenPayload);
       return NextResponse.json({
-        access_token: accessTokenString,
+        access_token: jwtAccessToken,
         token_type: "Bearer",
         expires_in: accessTokenExpiry,
         scope: refreshToken.scope.join(" "),
