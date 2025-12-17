@@ -3,6 +3,47 @@ import { prisma } from "@/lib/db";
 import { tokenSchema } from "@/lib/validators";
 import { verifyClientSecret, verifyPKCE, generateToken } from "@/lib/crypto";
 import { createAccessToken, createIDToken } from "@/lib/jwt";
+import { Prisma, AccessToken } from "@prisma/client";
+// Helper to create a unique access token, retrying on collision
+import type { AccessTokenPayload as JWTAccessTokenPayload } from "@/lib/jwt";
+
+type AccessTokenPayload = JWTAccessTokenPayload;
+
+async function createUniqueAccessToken(
+  payload: AccessTokenPayload,
+  clientId: string,
+  userId: string,
+  scope: string[],
+  expiresAt: Date,
+  maxRetries = 5
+): Promise<string> {
+  let token = await createAccessToken(payload);
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      await prisma.accessToken.create({
+        data: {
+          token,
+          client: { connect: { clientId } },
+          user: { connect: { id: userId } },
+          scope,
+          expiresAt,
+        },
+      });
+      return token;
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === "P2002"
+      ) {
+        // Token collision, regenerate token and retry
+        token = await createAccessToken(payload);
+        continue;
+      }
+      throw error;
+    }
+  }
+  throw new Error("Failed to generate a unique access token after several attempts");
+}
 import { config } from "@/lib/config";
 import { ZodError } from "zod";
 
@@ -184,7 +225,9 @@ export async function POST(request: NextRequest) {
         })),
       }));
 
-      const accessTokenString = await createAccessToken({
+
+      // Generate access token string
+      const accessTokenPayload: AccessTokenPayload = {
         sub: authCode.userId,
         tenant_id: authCode.user.tenantId,
         client_id: client.clientId,
@@ -193,29 +236,24 @@ export async function POST(request: NextRequest) {
         name: authCode.user.name || undefined,
         role: authCode.user.role,
         custom_roles: customRoles.length > 0 ? customRoles : undefined,
-      });
-
+      };
       const refreshTokenString = generateToken(48);
-
-      // Store tokens in database
       const expiresAt = new Date(Date.now() + accessTokenExpiry * 1000);
       const refreshExpiresAt = new Date(Date.now() + refreshTokenExpiry * 1000);
 
-      await prisma.accessToken.create({
-        data: {
-          token: accessTokenString,
-          clientId: client.clientId,
-          userId: authCode.userId,
-          scope: authCode.scope,
-          expiresAt,
-        },
-      });
+      const accessTokenString = await createUniqueAccessToken(
+        accessTokenPayload,
+        client.clientId,
+        authCode.userId,
+        authCode.scope,
+        expiresAt
+      );
 
       await prisma.refreshToken.create({
         data: {
           token: refreshTokenString,
-          clientId: client.clientId,
-          userId: authCode.userId,
+          client: { connect: { clientId: client.clientId } },
+          user: { connect: { id: authCode.userId } },
           scope: authCode.scope,
           expiresAt: refreshExpiresAt,
         },
@@ -330,7 +368,8 @@ export async function POST(request: NextRequest) {
         })),
       }));
 
-      const accessTokenString = await createAccessToken({
+
+      const refreshAccessTokenPayload: AccessTokenPayload = {
         sub: refreshToken.userId,
         tenant_id: refreshToken.user.tenantId,
         client_id: client.clientId,
@@ -340,19 +379,15 @@ export async function POST(request: NextRequest) {
         role: refreshToken.user.role,
         custom_roles:
           refreshCustomRoles.length > 0 ? refreshCustomRoles : undefined,
-      });
-
-      // Store new access token
+      };
       const expiresAt = new Date(Date.now() + accessTokenExpiry * 1000);
-      await prisma.accessToken.create({
-        data: {
-          token: accessTokenString,
-          clientId: client.clientId,
-          userId: refreshToken.userId,
-          scope: refreshToken.scope,
-          expiresAt,
-        },
-      });
+      const accessTokenString = await createUniqueAccessToken(
+        refreshAccessTokenPayload,
+        client.clientId,
+        refreshToken.userId,
+        refreshToken.scope,
+        expiresAt
+      );
 
       return NextResponse.json({
         access_token: accessTokenString,
