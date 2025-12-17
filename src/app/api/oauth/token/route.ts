@@ -3,7 +3,7 @@ import { prisma } from "@/lib/db";
 import { tokenSchema } from "@/lib/validators";
 import { verifyClientSecret, verifyPKCE, generateToken } from "@/lib/crypto";
 import { createAccessToken, createIDToken } from "@/lib/jwt";
-import { Prisma, AccessToken } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 // Helper to create a unique access token, retrying on collision
 import type { AccessTokenPayload as JWTAccessTokenPayload } from "@/lib/jwt";
 
@@ -15,7 +15,7 @@ async function createUniqueAccessToken(
   userId: string,
   scope: string[],
   expiresAt: Date,
-  maxRetries = 5
+  maxRetries = 5,
 ): Promise<string> {
   let token = await createAccessToken(payload);
   for (let i = 0; i < maxRetries; i++) {
@@ -42,7 +42,9 @@ async function createUniqueAccessToken(
       throw error;
     }
   }
-  throw new Error("Failed to generate a unique access token after several attempts");
+  throw new Error(
+    "Failed to generate a unique access token after several attempts",
+  );
 }
 import { config } from "@/lib/config";
 import { ZodError } from "zod";
@@ -225,7 +227,6 @@ export async function POST(request: NextRequest) {
         })),
       }));
 
-
       // Generate access token string
       const accessTokenPayload: AccessTokenPayload = {
         sub: authCode.userId,
@@ -246,7 +247,7 @@ export async function POST(request: NextRequest) {
         client.clientId,
         authCode.userId,
         authCode.scope,
-        expiresAt
+        expiresAt,
       );
 
       await prisma.refreshToken.create({
@@ -368,7 +369,6 @@ export async function POST(request: NextRequest) {
         })),
       }));
 
-
       const refreshAccessTokenPayload: AccessTokenPayload = {
         sub: refreshToken.userId,
         tenant_id: refreshToken.user.tenantId,
@@ -386,7 +386,7 @@ export async function POST(request: NextRequest) {
         client.clientId,
         refreshToken.userId,
         refreshToken.scope,
-        expiresAt
+        expiresAt,
       );
 
       return NextResponse.json({
