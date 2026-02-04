@@ -5,6 +5,8 @@ import { createSession } from "@/lib/session";
 import { ZodError, z } from "zod";
 import { createHash } from "crypto";
 
+export const runtime = "nodejs";
+
 const verifyMfaSchema = z.object({
   userId: z.string(),
   code: z.string().min(6),

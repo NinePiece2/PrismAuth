@@ -3,6 +3,8 @@ import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
 import { z } from "zod";
 
+export const runtime = "nodejs";
+
 const setPermissionsSchema = z.object({
   applicationId: z.string(),
   permissions: z.array(z.string()),

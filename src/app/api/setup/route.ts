@@ -8,6 +8,8 @@ import { prisma } from "@/lib/db";
 import { hashPassword } from "@/lib/crypto";
 import { createSession } from "@/lib/session";
 
+export const runtime = "nodejs";
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();

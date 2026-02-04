@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { destroySession, getCurrentUser } from "@/lib/session";
 import { prisma } from "@/lib/db";
 
+export const runtime = "nodejs";
+
 /**
  * User Logout
  * POST /api/auth/logout

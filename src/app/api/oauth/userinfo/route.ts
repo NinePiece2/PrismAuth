@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { verifyToken } from "@/lib/jwt";
 
+export const runtime = "nodejs";
+
 /**
  * OAuth2 UserInfo Endpoint (OpenID Connect)
  * GET /api/oauth/userinfo

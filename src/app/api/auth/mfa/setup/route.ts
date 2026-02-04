@@ -6,6 +6,8 @@ import QRCode from "qrcode";
 import { randomBytes } from "crypto";
 import { emailService, emailTemplates } from "@/lib/email";
 
+export const runtime = "nodejs";
+
 /**
  * Setup MFA for user
  * POST /api/auth/mfa/setup

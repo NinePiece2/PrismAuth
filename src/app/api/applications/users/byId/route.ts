@@ -3,6 +3,8 @@ import { prisma } from "@/lib/db";
 import { verifyClientSecret } from "@/lib/crypto";
 import { z } from "zod";
 
+export const runtime = "nodejs";
+
 const getUserByIdSchema = z.object({
   sub: z.string(), // user id
   applicationId: z.string().optional(),

@@ -3,6 +3,8 @@ import { prisma } from "@/lib/db";
 import { createTenantSchema } from "@/lib/validators";
 import { ZodError } from "zod";
 
+export const runtime = "nodejs";
+
 /**
  * Create Tenant (Super Admin only)
  * POST /api/admin/tenants

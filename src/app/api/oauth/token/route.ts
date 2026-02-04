@@ -8,6 +8,8 @@ import { Prisma } from "@prisma/client";
 // Helper to create a unique access token, retrying on collision
 import type { AccessTokenPayload as JWTAccessTokenPayload } from "@/lib/jwt";
 
+export const runtime = "nodejs";
+
 type AccessTokenPayload = JWTAccessTokenPayload;
 
 async function createUniqueDbToken(

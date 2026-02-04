@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { verifyClientSecret } from "@/lib/crypto";
+
+export const runtime = "nodejs";
 import { z } from "zod";
 
 const getUsersByRoleSchema = z

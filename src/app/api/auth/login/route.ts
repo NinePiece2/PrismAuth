@@ -6,6 +6,8 @@ import { createSession } from "@/lib/session";
 import { ZodError } from "zod";
 import { createHash } from "crypto";
 
+export const runtime = "nodejs";
+
 /**
  * User Login
  * POST /api/auth/login

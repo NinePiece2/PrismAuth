@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/session";
 import { prisma } from "@/lib/db";
 
+export const runtime = "nodejs";
+
 /**
  * Get current user session
  * GET /api/auth/me

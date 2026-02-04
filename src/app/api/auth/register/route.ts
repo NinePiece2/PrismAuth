@@ -5,6 +5,8 @@ import { hashPassword } from "@/lib/crypto";
 import { createSession } from "@/lib/session";
 import { ZodError } from "zod";
 
+export const runtime = "nodejs";
+
 /**
  * User Registration
  * POST /api/auth/register

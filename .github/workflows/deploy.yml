@@ -84,7 +84,6 @@ jobs:
           # Update UI deployment (both containers use the same image)
           kubectl set image deployment/prismauth-app \
             prismauth-app=ghcr.io/ninepiece2/prismauth:latest \
-            prismauth-nginx=nginx:latest \
             -n prismauth
 
           # Add deployment annotations

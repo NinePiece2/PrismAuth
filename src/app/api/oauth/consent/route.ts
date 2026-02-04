@@ -4,6 +4,8 @@ import { getCurrentUser } from "@/lib/session";
 import { generateAuthorizationCode } from "@/lib/crypto";
 import { config } from "@/lib/config";
 
+export const runtime = "nodejs";
+
 /**
  * OAuth2 Consent Endpoint
  * POST /api/oauth/consent

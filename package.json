@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev -p 4000",
-    "build": "next build",
+    "dev": "next dev -p 4000 --webpack",
+    "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint",
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,md,css,scss,html,mdx}\"",

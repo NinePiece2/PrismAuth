@@ -6,6 +6,8 @@ import { generateAuthorizationCode } from "@/lib/crypto";
 import { config } from "@/lib/config";
 import { ZodError } from "zod";
 
+export const runtime = "nodejs";
+
 /**
  * OAuth2 Authorization Endpoint
  * GET /api/oauth/authorize

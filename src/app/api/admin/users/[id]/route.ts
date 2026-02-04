@@ -3,6 +3,8 @@ import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
 import { ZodError, z } from "zod";
 
+export const runtime = "nodejs";
+
 const updateUserSchema = z.object({
   role: z.enum(["user", "admin"]).optional(),
   customRoleIds: z.array(z.string()).optional(),

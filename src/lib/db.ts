@@ -16,6 +16,8 @@ const pool =
     max: 20, // Maximum pool size
     idleTimeoutMillis: 30000, // Close idle connections after 30 seconds
     connectionTimeoutMillis: 10000,
+    // Use native Promise instead of custom implementation
+    Promise: Promise,
   });
 
 if (process.env.NODE_ENV !== "production") globalForPrisma.pool = pool;

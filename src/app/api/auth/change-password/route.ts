@@ -5,6 +5,8 @@ import { createSession } from "@/lib/session";
 import { z } from "zod";
 import { emailService, emailTemplates } from "@/lib/email";
 
+export const runtime = "nodejs";
+
 const passwordRegex =
   /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/;
 

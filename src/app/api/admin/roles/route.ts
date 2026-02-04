@@ -3,6 +3,8 @@ import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
 import { z } from "zod";
 
+export const runtime = "nodejs";
+
 const createRoleSchema = z.object({
   name: z.string().min(1),
   description: z.string().optional(),

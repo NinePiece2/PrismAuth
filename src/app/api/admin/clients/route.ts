@@ -5,6 +5,8 @@ import { createClientSchema } from "@/lib/validators";
 import { generateClientCredentials, hashClientSecret } from "@/lib/crypto";
 import { ZodError } from "zod";
 
+export const runtime = "nodejs";
+
 /**
  * List OAuth Clients
  * GET /api/admin/clients

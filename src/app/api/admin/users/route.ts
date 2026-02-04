@@ -6,6 +6,8 @@ import { ZodError, z } from "zod";
 import { emailService, emailTemplates } from "@/lib/email";
 import { config } from "@/lib/config";
 
+export const runtime = "nodejs";
+
 const createUserSchema = z.object({
   email: z.string().email(),
   password: z.string().min(8),
