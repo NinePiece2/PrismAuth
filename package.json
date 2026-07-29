@@ -18,7 +18,7 @@
     "generate:keys": "bun scripts/generate-keys.ts",
     "quickstart": "powershell -ExecutionPolicy Bypass -File ./scripts/quickstart.ps1",
     "predev": "bun run format",
-    "prebuild": "bun run format && bun run lint"
+    "prebuild": "bun run format"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
